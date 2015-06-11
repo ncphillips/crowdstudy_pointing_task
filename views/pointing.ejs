@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pointing Task</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        * { margin: 0px; padding: 0px; }
+        canvas { display:block; background-color: #aaaaaa; }
+    </style>
+</head>
+
+<body>
+    <canvas id='main'></canvas>
+    <button onClick="launchFullscreen(document.documentElement)" style="top: 0; left: 0; position: absolute; width:100%;">Full Screen(Press Esc to Exit Full Screen)</button>
+    <script>
+
+    var worker_id = <%= worker_id %>;
+    var platform = "<%= platform %>";
+    var hitId = "<%= hitId %>";
+
+
+
+    // ---------Trial Variables--------------
+    var number_of_targets = 10;
+
+    var number_of_blocks = 4;
+
+    var center_diameters = [40, 60, 80]; // Diameter is % of Canvas Height, These are the Diameter from the center to the Targets
+    var target_diameters = [3, 6, 12];   // Diameter is % of Canvas Height, These are the Target diameters
+
+    var invisibleMode = true;                // true will display only the start and destination targets
+    var half_invisible_half_visible = true;  // This overrides the invisibleMode value, if true half the blocks will be invisible
+    var debugMode = false;                   // WARNING: In debug mode you will not have 120Hz Tracking, closer to ~50Hz tracking
+    var finishMessage = "You have finished the pointing task.\n\nPlease press OK to continue to the next survey. ";
+    var welcomeMessage = "Welcome to the Pointing Study.\n\nBEFORE starting please make sure to press the FULLSCREEN button at the top of the page!";
+    var breakMessage = "Feel free to take a break now.\nPress OK to continue.";
+    // ---------Trial Variables--------------
+
+
+
+
+
+    var canvas = document.getElementById('main');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+    /* Target Class
+     * (x,y) - Coordinates
+     * r(px) - Radius
+     * id - Identification Number
+     */
+    function Target(x, y, r, id) {
+        this.x = x;
+        this.y = y;
+        this.r = r;
+        this.id = id;
+        this.color = "white";
+    }
+
+    Target.prototype.draw = function(){
+        if(start == this.id){           // Start target is purple
+            ctx.fillStyle = "purple";
+        }
+        else if(dest == this.id){       // Destination target is green
+            ctx.fillStyle = "green";
+        }
+        else{
+            ctx.fillStyle = this.color;
+        }
+        ctx.globalAlpha = 0.9;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r, 0, 2*Math.PI);
+        if(this.id == dest){
+            // Draws the purple cross on destination target
+            ctx.strokeStyle = "purple";
+            ctx.moveTo(this.x, this.y - this.r);
+            ctx.lineTo(this.x, this.y + this.r);
+            ctx.moveTo(this.x - this.r, this.y);
+            ctx.lineTo(this.x + this.r, this.y);
+        }
+
+        ctx.fill();
+
+        ctx.stroke();
+
+        if(debugMode){
+            // Writes the target id on each target
+            ctx.fillStyle = 'black';
+            ctx.font = "24px Georgia";
+            ctx.fillText(this.id, this.x, this.y);
+        }
+    };
+
+    /* Trial Class
+     * cen(px) - Diameter from center of screen to center of target
+     * tar(px) - Diameter of the
+     */
+    function Trial(cen, tar){
+        this.cen = cen;
+        this.tar = tar;
+    }
+
+    window.addEventListener('load', onWindowLoad, false);
+    window.addEventListener('resize', onResized, false);
+
+    function onResized(){
+        // Get new canvas dimensions
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        if(!doneStudy){
+            // Reload the trial
+            Targets = [];
+
+            trial_cen = canvas.height*(Trials[currentTrial].cen/200);
+            trial_tar = canvas.height*(Trials[currentTrial].tar/200);
+
+            for (var i = 0; i < number_of_targets; i++) {
+                var temp = new Target(canvas.width/2 + Math.cos(i*angleIncr)*trial_cen, canvas.height/2 + Math.sin(i*angleIncr)*trial_cen, trial_tar, i);
+                Targets.push(temp);
+            }
+        }   
+        canvasDraw();
+    }
+
+    // Arrays to hold Targets and Trials
+    var Targets = [];
+    var Trials = [];
+
+    // Object to hold the mouse position
+    var mouse = {x: 0, y: 0};
+
+    var stopLog = true;
+    document.addEventListener('mousemove', function(e){ 
+        // Get mouse position, for all kinds of browsers
+        mouse.x = e.clientX || e.pageX || (e.clientX - canvas.offsetLeft); 
+        mouse.y = e.clientY || e.pageY || (e.clientY - canvas.offsetTop);
+        
+        if(debugMode){
+            // Draw a mouse trail
+            ctx.fillStyle = "black";
+            ctx.beginPath();
+            ctx.arc(mouse.x, mouse.y, canvas.width*.0005, 0, 2*Math.PI);
+            ctx.fill();
+            ctx.stroke();
+        }
+        if(!stopLog){
+            // Log mouse movement
+            socket.emit(
+                    'moveLog', PID + "; " +
+                    trial_tar + "; " +
+                    trial_cen + "; " +
+                    Trials[currentTrial].tar  + "; " +
+                    Trials[currentTrial].cen  + "; "  +
+                    number_of_targets + "; " +
+                    dest + "; " +
+                    mouse.x + "; " +
+                    mouse.y + "; " +
+                    Date.now() + "; "  +
+                    browserName + "; "  +
+                    OSName + "; " +
+                    (invisibleMode ? 0 : 1) + "; "  +
+                    (currentBlock + 1)  +
+                    worker_id + "; " +
+                    platform + "; " +
+                    hitId + "; " +
+                    "\n");
+        }
+    }, false);
+
+    var mousedown = false,
+        mousedownTime = 0;
+    document.addEventListener('mousedown', function(e){
+        mousedown = true;
+        mousedownTime = Date.now();
+    }, false);
+
+    var oldStart,
+        errors = 0,
+        doneStudy = false,
+        skipFirst = true,   // When the trial starts you don't want to log the first target click, you log the second time the target is clicked
+        currentBlock = 0;
+    document.addEventListener('mouseup', function(e){
+        if(mousedown){  // Check if mouse was previously down, this indicates a click
+            mousedown = false;
+            for (var i = 0; i < Targets.length; i++) {
+                if(Targets[i].id == dest){
+                    // Check if distance between mouse click and center of target is less than the target radius
+                    if((Math.sqrt((Math.pow(((e.x || (e.clientX - canvas.offsetLeft)) - Targets[i].x),2))+(Math.pow(((e.y || (e.clientY - canvas.offsetTop)) - Targets[i].y),2)))) <= trial_tar){
+                        stopLog = false; // Enable logging
+                        endTime = Date.now();
+                        if(!skipFirst){
+                            // Log mouse click data
+                            socket.emit( 'clickLog', PID + "; " +
+                            trial_tar + "; " +
+                            trial_cen + "; " +
+                            Trials[currentTrial].tar  + "; " +
+                            Trials[currentTrial].cen  + "; "  +
+                            number_of_targets + "; " +
+                            dest + "; " +
+                            startTime + "; " +
+                            endTime + "; " +
+                            mousedownTime  + "; "  +
+                            errors + "; "  +
+                            browserName  + "; " +
+                            OSName + "; " +
+                            (invisibleMode ? 0 : 1) + "; "  +
+                            (currentBlock + 1)  + ";" +
+                            worker_id + ";" +
+                            platform + "; " +
+                            hitId + "; " +
+                            "\n");
+                        }
+                        else{
+                            skipFirst = false;
+                        }
+                        errors = 0;
+                        startTime = endTime;
+                        oldStart = start;
+                        start = dest;
+                        
+                        if(dest == 0){  // Indicates end of a trial
+                            skipFirst = true;
+                            currentTrial++;
+                            currentTrial %= (center_diameters.length * target_diameters.length);
+                            if(currentTrial == 0){  // Indicates end of a block
+                                currentBlock++;
+                                if(currentBlock == number_of_blocks){
+                                    // Happens when the entire trial is over
+                                    doneStudy = true;
+                                    alert(finishMessage);
+                                    window.location.replace("https://hci-mturk.usask.ca/submitted");
+                                }
+                                else if(currentBlock == number_of_blocks/2 && half_invisible_half_visible){
+                                    // If half done the blocks and doing half invisible half visible
+                                    invisibleMode = !invisibleMode;
+                                }
+                            }
+                            stopLog = true; // Trial is over, don't want to log inbetween trials
+                            reloadTrial();
+                        }
+                        else{
+                            // Iterate through the trial
+                            dest = (oldStart == number_of_targets - 1) ? 0 : oldStart + 1;
+                            canvasDraw();
+                        }
+                        break;
+                    }
+                    else{ // Missed the target
+                        errors += 1;
+                    }
+                }
+            }
+        }
+    }, false);
+
+    var socket = io();  // Socket connection to the server
+    var angleIncr;      // Will hold angle between targets
+    var start = 0;
+    var dest = 0;
+    var startTime = Date.now();
+    var endTime = 0;
+    var currentTrial = 0;
+    var trial_cen = 0;
+    var trial_tar = 0;
+    var PID = 0;
+    var browserName = "";
+    var OSName = "Unknown OS";
+    function onWindowLoad() {
+
+        detectBrowserOS();
+
+        // Get PID number from external source
+        var query = window.location.search.substring(1);
+        var vars = query.split("&");
+        for (var i=0;i<vars.length;i++) {
+            var pair = vars[i].split("=");
+            if (pair[0] == "PID" || pair[0] == "pid" || pair[0] == "Pid" ) {
+                PID = pair[1];
+            }
+        }
+        // PID = Date.now() % 1000;
+
+        // Tell server PID number
+        socket.emit("init", PID);
+
+        // Hide the information passed in the URL
+        window.history.replaceState("Hello", "World", "PointingTask");
+
+        alert(welcomeMessage);
+
+        ctx = canvas.getContext('2d');
+
+        // Determines invisibility based on parity of PID
+        if(half_invisible_half_visible){
+            if(PID%2 == 1){
+                invisibleMode = true;
+            }
+            else{
+                invisibleMode = false;
+            }
+        }
+
+        // Initialize Trials
+        for (var i = 0; i < target_diameters.length; i++) {
+            for (var j = 0; j < center_diameters.length; j++) {
+                Trials.push(new Trial(center_diameters[j], target_diameters[i]));
+            }
+        }
+
+        shuffleTrial();
+
+        angleIncr = 2*Math.PI/number_of_targets;                    // Angle between targets
+        trial_cen = canvas.height*(Trials[currentTrial].cen/200);   // Radius from screen center to target center for the trial
+        trial_tar = canvas.height*(Trials[currentTrial].tar/200);   // Radius of target in trial
+        dest = Math.ceil(number_of_targets/2);
+
+        // Initialize Targets for trial
+        for (var i = 0; i < number_of_targets; i++) {
+            var temp = new Target(canvas.width/2 + Math.cos(i*angleIncr)*trial_cen, canvas.height/2 + Math.sin(i*angleIncr)*trial_cen, trial_tar, i);
+            Targets.push(temp);
+        }
+
+        canvasDraw();
+    }
+
+    // Initializes the next trial
+    function reloadTrial(){
+        angleIncr = 2*Math.PI/number_of_targets;
+        trial_cen = canvas.height*(Trials[currentTrial].cen/200);
+        trial_tar = canvas.height*(Trials[currentTrial].tar/200);
+        start = 0;
+        dest = Math.ceil(number_of_targets/2);
+
+        Targets = [];   // Empty the old targets
+
+        canvasDraw();
+
+        if(!doneStudy){
+            alert(breakMessage);
+
+            // Initialize new targets
+            for (var i = 0; i < number_of_targets; i++) {
+                var temp = new Target(canvas.width/2 + Math.cos(i*angleIncr)*trial_cen, canvas.height/2 + Math.sin(i*angleIncr)*trial_cen, trial_tar, i);
+                Targets.push(temp);
+            }
+
+            canvasDraw();
+        }
+    }
+
+    // Redraws the canvas
+    function canvasDraw(){
+        // Clear old canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (var i = 0; i < Targets.length; i++) {
+            if(invisibleMode){
+                // If trial is in invisible mode, only draw start and destination target
+                if(Targets[i].id == start || Targets[i].id == dest){
+                    Targets[i].draw();
+                }
+            }
+            else{
+                Targets[i].draw();
+            }
+        }
+        if(debugMode){
+            // Write the debugging text
+            ctx.fillStyle = 'black';
+            ctx.font = "24px Georgia";
+            ctx.fillText("Canvas Height: " + canvas.height + " Canvas Width: " + canvas.width  +" Current Trial: " + currentTrial +" Current Block:" + currentBlock + " PID:" + PID, 0 , canvas.height*.1);
+        }
+    }
+
+    // Shuffles Trials within each block by repeatedly picking random 2 trial positions to swap
+    function shuffleTrial(){
+        var shuffle_one = Math.floor(Math.random() * Trials.length);
+        var shuffle_two = Math.floor(Math.random() * Trials.length);
+        var temp = null;
+        for(var i = 0 ; i < 10; ++i){
+            temp = Trials[shuffle_one];
+            Trials[shuffle_one] = Trials[shuffle_two];
+            Trials[shuffle_two] = temp;
+            shuffle_one = Math.floor(Math.random() * Trials.length);
+            shuffle_two = Math.floor(Math.random() * Trials.length);
+        }
+    }
+
+    // Function to make the canvas fullscreen
+    // Code is from a JS Fullscreen API
+    function launchFullscreen(element) {
+        if(element.requestFullscreen) {
+            element.requestFullscreen();
+        }
+        else if(element.mozRequestFullScreen) {
+            element.mozRequestFullScreen();
+        }
+        else if(element.webkitRequestFullscreen) {
+            element.webkitRequestFullscreen();
+        }
+        else if(element.msRequestFullscreen) {
+            element.msRequestFullscreen();
+        }
+    }
+
+    // Function to detect browser information, and OS information
+    function detectBrowserOS(){
+        var nVer = navigator.appVersion;
+        var nAgt = navigator.userAgent;
+        var fullVersion  = ''+parseFloat(navigator.appVersion);
+        var majorVersion = parseInt(navigator.appVersion,10);
+        var nameOffset,verOffset,ix;
+
+        if ((verOffset=nAgt.indexOf("Opera"))!=-1) {
+            browserName = "Opera";
+            fullVersion = nAgt.substring(verOffset+6);
+            if ((verOffset=nAgt.indexOf("Version"))!=-1){
+                fullVersion = nAgt.substring(verOffset+8);
+            }
+        }
+        else if ((verOffset=nAgt.indexOf("MSIE"))!=-1) {
+            browserName = "Microsoft Internet Explorer";
+            fullVersion = nAgt.substring(verOffset+5);
+        }
+        else if ((verOffset=nAgt.indexOf("Chrome"))!=-1) {
+            browserName = "Chrome";
+            fullVersion = nAgt.substring(verOffset+7);
+        }
+        else if ((verOffset=nAgt.indexOf("Safari"))!=-1) {
+            browserName = "Safari";
+            fullVersion = nAgt.substring(verOffset+7);
+            if ((verOffset=nAgt.indexOf("Version"))!=-1){
+                fullVersion = nAgt.substring(verOffset+8);
+            }
+        }
+        else if ((verOffset=nAgt.indexOf("Firefox"))!=-1) {
+            browserName = "Firefox";
+            fullVersion = nAgt.substring(verOffset+8);
+        }
+        else if ( (nameOffset=nAgt.lastIndexOf(' ')+1) < (verOffset=nAgt.lastIndexOf('/')) ) {
+            browserName = nAgt.substring(nameOffset,verOffset);
+            fullVersion = nAgt.substring(verOffset+1);
+            if (browserName.toLowerCase()==browserName.toUpperCase()) {
+                browserName = navigator.appName;
+            }
+        }
+        if ((ix=fullVersion.indexOf(";"))!=-1){
+           fullVersion=fullVersion.substring(0,ix);
+        }
+        if ((ix=fullVersion.indexOf(" "))!=-1){
+           fullVersion=fullVersion.substring(0,ix);
+        }
+        majorVersion = parseInt(''+fullVersion,10);
+        if (isNaN(majorVersion)) {
+            fullVersion  = ''+parseFloat(navigator.appVersion);
+            majorVersion = parseInt(navigator.appVersion,10);
+        }
+
+        if (navigator.appVersion.indexOf("Win")!=-1) OSName="Windows";
+        if (navigator.appVersion.indexOf("Mac")!=-1) OSName="MacOS";
+        if (navigator.appVersion.indexOf("X11")!=-1) OSName="UNIX";
+        if (navigator.appVersion.indexOf("Linux")!=-1) OSName="Linux";
+    }
+
+    </script>
+</body>
+</html>
+

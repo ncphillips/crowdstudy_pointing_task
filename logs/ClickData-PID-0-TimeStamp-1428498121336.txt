@@ -1,0 +1,1 @@
+PID; W; D; Wr; Dr; tot; Target; Start; End; MouseDown; Error; Browser; OS; Invisible; Block; WorkerID; Platform; HIT;

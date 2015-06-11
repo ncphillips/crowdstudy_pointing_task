@@ -1,0 +1,2 @@
+PID; W; D; Wr; Dr; tot; Target; Start; End; MouseDown; Error; Browser; OS; Invisible; Block; WorkerID; Platform; HIT;
+0; 24.15; 322; 6; 80; 10; 1; 1428499722535; 1428499723409; 1428499723313; 0; Chrome; MacOS; 1; 1;412532;mturk; 412351; 
