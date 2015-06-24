@@ -7,8 +7,9 @@ var controllers = require('./controllers'); // Experiment Controllers
  * @param app
  */
 module.exports = function (app) {
-
-    app.get('/', controllers.ethicsAndWorkerId);
+  app.get('/', controllers.index);
+  app.get('/task', controllers.task);
+  app.get('/end', controllers.end);
 };
 
 

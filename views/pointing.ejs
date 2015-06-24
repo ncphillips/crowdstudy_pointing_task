@@ -12,22 +12,19 @@
 
 <body>
     <canvas id='main'></canvas>
-    <button onClick="launchFullscreen(document.documentElement)" style="top: 0; left: 0; position: absolute; width:100%;">Full Screen(Press Esc to Exit Full Screen)</button>
     <script>
 
-    var worker_id = <%= worker_id %>;
-    var platform = "<%= platform %>";
-    var hitId = "<%= hitId %>";
-
-
+    var worker_id = "<%= worker_id %>";
 
     // ---------Trial Variables--------------
     var number_of_targets = 10;
 
-    var number_of_blocks = 4;
+    var number_of_blocks = 1;
 
-    var center_diameters = [40, 60, 80]; // Diameter is % of Canvas Height, These are the Diameter from the center to the Targets
-    var target_diameters = [3, 6, 12];   // Diameter is % of Canvas Height, These are the Target diameters
+    var center_diameters = [40];// 60];// 80]; // Diameter is % of Canvas Height, These are the Diameter from the center to the Targets
+    var target_diameters = [3];// 6];//, 12];   // Diameter is % of Canvas Height, These are the Target diameters
+
+    var number_of_trials_per_block = center_diameters.length * target_diameters.length;
 
     var invisibleMode = true;                // true will display only the start and destination targets
     var half_invisible_half_visible = true;  // This overrides the invisibleMode value, if true half the blocks will be invisible
@@ -37,13 +34,11 @@
     var breakMessage = "Feel free to take a break now.\nPress OK to continue.";
     // ---------Trial Variables--------------
 
-
-
-
-
+    // ---------Canvas Variables-------------
     var canvas = document.getElementById('main');
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
+    // ---------Canvas Variables-------------
 
     /* Target Class
      * (x,y) - Coordinates
@@ -101,6 +96,7 @@
         this.tar = tar;
     }
 
+    // ---------Window Events-------------
     window.addEventListener('load', onWindowLoad, false);
     window.addEventListener('resize', onResized, false);
 
@@ -123,6 +119,7 @@
         }   
         canvasDraw();
     }
+    // ---------Window Events-------------
 
     // Arrays to hold Targets and Trials
     var Targets = [];
@@ -131,6 +128,7 @@
     // Object to hold the mouse position
     var mouse = {x: 0, y: 0};
 
+    // ---------Mouse Events-------------
     var stopLog = true;
     document.addEventListener('mousemove', function(e){ 
         // Get mouse position, for all kinds of browsers
@@ -148,24 +146,20 @@
         if(!stopLog){
             // Log mouse movement
             socket.emit(
-                    'moveLog', PID + "; " +
-                    trial_tar + "; " +
-                    trial_cen + "; " +
-                    Trials[currentTrial].tar  + "; " +
-                    Trials[currentTrial].cen  + "; "  +
-                    number_of_targets + "; " +
-                    dest + "; " +
-                    mouse.x + "; " +
-                    mouse.y + "; " +
-                    Date.now() + "; "  +
-                    browserName + "; "  +
-                    OSName + "; " +
-                    (invisibleMode ? 0 : 1) + "; "  +
-                    (currentBlock + 1)  +
-                    worker_id + "; " +
-                    platform + "; " +
-                    hitId + "; " +
-                    "\n");
+                    'moveLog',
+                    trial_tar + ";" +
+                    trial_cen + ";" +
+                    Trials[currentTrial].tar  + ";" +
+                    Trials[currentTrial].cen  + ";"  +
+                    number_of_targets + ";" +
+                    dest + ";" +
+                    mouse.x + ";" +
+                    mouse.y + ";" +
+                    Date.now() + ";"  +
+                    browserName + ";"  +
+                    OSName + ";" +
+                    (invisibleMode ? 0 : 1) + ";"  +
+                    (currentBlock + 1));
         }
     }, false);
 
@@ -192,25 +186,21 @@
                         endTime = Date.now();
                         if(!skipFirst){
                             // Log mouse click data
-                            socket.emit( 'clickLog', PID + "; " +
-                            trial_tar + "; " +
-                            trial_cen + "; " +
-                            Trials[currentTrial].tar  + "; " +
-                            Trials[currentTrial].cen  + "; "  +
-                            number_of_targets + "; " +
-                            dest + "; " +
-                            startTime + "; " +
-                            endTime + "; " +
-                            mousedownTime  + "; "  +
-                            errors + "; "  +
-                            browserName  + "; " +
-                            OSName + "; " +
-                            (invisibleMode ? 0 : 1) + "; "  +
-                            (currentBlock + 1)  + ";" +
-                            worker_id + ";" +
-                            platform + "; " +
-                            hitId + "; " +
-                            "\n");
+                            socket.emit( 'clickLog',
+                            trial_tar + ";" +
+                            trial_cen + ";" +
+                            Trials[currentTrial].tar  + ";" +
+                            Trials[currentTrial].cen  + ";"  +
+                            number_of_targets + ";" +
+                            dest + ";" +
+                            startTime + ";" +
+                            endTime + ";" +
+                            mousedownTime  + ";"  +
+                            errors + ";"  +
+                            browserName  + ";" +
+                            OSName + ";" +
+                            (invisibleMode ? 0 : 1) + ";"  +
+                            (currentBlock + 1));
                         }
                         else{
                             skipFirst = false;
@@ -223,14 +213,14 @@
                         if(dest == 0){  // Indicates end of a trial
                             skipFirst = true;
                             currentTrial++;
-                            currentTrial %= (center_diameters.length * target_diameters.length);
+                            currentTrial %= number_of_trials_per_block;
                             if(currentTrial == 0){  // Indicates end of a block
                                 currentBlock++;
                                 if(currentBlock == number_of_blocks){
                                     // Happens when the entire trial is over
                                     doneStudy = true;
                                     alert(finishMessage);
-                                    window.location.replace("https://hci-mturk.usask.ca/submitted");
+                                    window.location.replace("/PointingTask/end");
                                 }
                                 else if(currentBlock == number_of_blocks/2 && half_invisible_half_visible){
                                     // If half done the blocks and doing half invisible half visible
@@ -254,6 +244,7 @@
             }
         }
     }, false);
+    // ---------Mouse Events-------------
 
     var socket = io();  // Socket connection to the server
     var angleIncr;      // Will hold angle between targets
@@ -283,7 +274,7 @@
         // PID = Date.now() % 1000;
 
         // Tell server PID number
-        socket.emit("init", PID);
+        socket.emit("init", worker_id);
 
         // Hide the information passed in the URL
         window.history.replaceState("Hello", "World", "PointingTask");
