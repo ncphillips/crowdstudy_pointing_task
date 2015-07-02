@@ -20,9 +20,8 @@ module.exports = function (config, server) {
 
   io.on('connection', function (socket) {
     console.log('a user connected');
-    var moveLog = "";
-    var clickLog = "";
-    var worker = null;
+    var worker;
+    var index;
 
     MongoClient.connect(config.server.db, function (err, db) {
       var workers = db.collection('workers');
@@ -36,40 +35,38 @@ module.exports = function (config, server) {
             console.log("No worker found.");
           } else {
             worker = w[0];
+            index = worker.experiments.pointing_task.data.length;
+            worker.experiments.pointing_task.data[index] = {
+              click_logs: [], move_logs: []
+            };
+
           }
         });
       });
 
       socket.on('moveLog', function (msg) {
-        var event = msg.split(';');
-        var move_logs = worker.experiments.pointing_task.data.move_logs || [];
-        move_logs.push({
-          trial_tar: event[0],
-          trial_cen: event[1],
-          current_trial_tar: event[2],
-          current_trial_cen: event[3],
-          number_of_targets: event[4],
-          dest: event[5],
-          mouse_x: event[6],
-          mouse_y: event[7],
-          time: event[8],
-          browser_name: event[9],
-          os_name: event[10],
-          invisible_mode: event[11],
-          next_block: event[12]
-        });
-
-        workers.update(
-          {_id: worker._id},
-          {$set: {"experiments.pointing_task.data.move_logs": move_logs}},
-          function () {  }
-        );
+        //var event = msg.split(';');
+        //var data = worker.experiments.pointing_task.data;
+        //data[index].move_logs.push({
+        //  trial_tar: event[0],
+        //  trial_cen: event[1],
+        //  current_trial_tar: event[2],
+        //  current_trial_cen: event[3],
+        //  number_of_targets: event[4],
+        //  dest: event[5],
+        //  mouse_x: event[6],
+        //  mouse_y: event[7],
+        //  time: event[8],
+        //  browser_name: event[9],
+        //  os_name: event[10],
+        //  invisible_mode: event[11],
+        //  next_block: event[12]
+        //});
       });
 
       socket.on('clickLog', function (msg) {
         var event = msg.split(';');
-        var click_logs = worker.experiments.pointing_task.data.click_logs || [];
-        click_logs.push({
+        worker.experiments.pointing_task.data[index].click_logs.push({
           trial_tar: event[0],
           trial_cen: event[1],
           current_trial_tar: event[2],
@@ -85,11 +82,6 @@ module.exports = function (config, server) {
           invisible_mode: event[12],
           next_block: event[13]
         });
-        workers.update(
-          {_id: worker._id},
-          {$set: {"experiments.pointing_task.data.click_logs": click_logs}},
-          function () {  }
-        );
       });
 
       socket.on('consoleLog', function (msg) {
@@ -98,9 +90,15 @@ module.exports = function (config, server) {
 
       socket.on('disconnect', function () {
         console.log('user disconnected');
-        db.close(function () {
-          console.log('Pointing Task MongoDB Connection Closed');
-        });
+        workers.update(
+          {_id: worker._id},
+          {$set: {"experiments.pointing_task.data": worker.experiments.pointing_task.data}},
+          function () {
+            db.close(function () {
+              console.log('Pointing Task MongoDB Connection Closed');
+            });
+          }
+        );
       });
     });
   });
