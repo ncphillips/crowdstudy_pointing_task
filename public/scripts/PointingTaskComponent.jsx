@@ -31,14 +31,14 @@ var PointingTaskStats = React.createClass({
                   <td>{Math.round(this.state.stats.worker.last_block.time / 100)/10} s</td>
                   <td>{Math.round(this.state.stats.worker.last_block.time_per_target)/1000 } s</td>
                   <td>{Math.round(this.state.stats.worker.last_block.num_misses)}</td>
-                  <td>{Math.round(this.state.stats.worker.last_block.misses_per_target * 10)/10}</td>
+                  <td>{Math.round(this.state.stats.worker.last_block.misses_per_target * 100)/100}</td>
                 </tr>
                 <tr>
                   <td>Avg. Round</td>
                   <td>{Math.round(this.state.stats.worker.average.time / 100) / 10} s</td>
                   <td>{Math.round(this.state.stats.worker.average.time_per_target)/1000 } s</td>
-                  <td>{Math.round(this.state.stats.worker.average.num_misses)}</td>
-                  <td>{Math.round(this.state.stats.worker.average.misses_per_target * 10)/10}</td>
+                  <td>{Math.round(this.state.stats.worker.average.num_misses * 100)/100}</td>
+                  <td>{Math.round(this.state.stats.worker.average.misses_per_target * 100)/100}</td>
                 </tr>
               </tbody>
             </table>
@@ -75,8 +75,23 @@ var PointingTaskComponent = React.createClass({
   render: function () {
 
     var url = "/pointing_task/task?_id=" + this.props.worker._id;
-
-    if (this.state.view === 'task') {
+    if (this.state.view === 'introduction') {
+      return (
+        <div>
+          <div className="col-md-3"></div>
+          <div className="col-md-6">
+            <FullScreenButton />
+            <h1>Pointing Task</h1>
+            <p>Your goal is to click the green target with the cross in it as quickly and as accurately as possible.</p>
+            <p>Please do your best to click each target as fast as possible, without making any errors.</p>
+            <p>Before starting, please press the full-screen button above.</p>
+            <input type="button" className="btn btn-primary btn-block" value="Begin" onClick={this._startTask}/>
+          </div>
+          <div className="col-md-3"></div>
+        </div>
+      );
+    }
+    else if (this.state.view === 'task') {
       return (
         <iframe id="task-iframe" src={url} width={this.state.width} height={this.state.height}/>
       );
@@ -95,10 +110,11 @@ var PointingTaskComponent = React.createClass({
   },
   getInitialState: function () {
     return {
+      fullscreen: false,
       height: window.innerHeight,
       width: window.innerWidth,
       block: 0,
-      view: 'task'
+      view: 'introduction'
     }
   },
   resetDimensions: function () {
@@ -110,9 +126,27 @@ var PointingTaskComponent = React.createClass({
   componentDidMount: function () {
     window.onresize = this.resetDimensions;
     this.watchIframe();
+
+    var screen_change_events = "webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange";
+    var _this = this;
+    $(document).on(screen_change_events, function () {
+      _this.toggleFullScreen(!_this.state.fullscreen);
+    });
   },
   componentDidUpdate: function () {
     this.watchIframe();
+  },
+  toggleFullScreen: function (f) {
+    this.setState({fullscreen: f});
+  },
+  _startTask: function () {
+    if (this.state.fullscreen) {
+      this.setState({
+        view: 'task'
+      });
+    } else {
+      alert("Please enter full-screen mode before starting.");
+    }
   },
   _onClickStats: function () {
     var next_block = this.state.block + 1;

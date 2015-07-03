@@ -12,18 +12,17 @@
 
 <body>
     <canvas id='main'></canvas>
-    <button onClick="launchFullscreen(document.documentElement)" style="top: 0; left: 0; position: absolute; width:100%;">Full Screen(Press Esc to Exit Full Screen)</button>
     <script>
 
     var worker_id = "<%= worker_id %>";
 
     // ---------Trial Variables--------------
-    var number_of_targets = 10;
+    var number_of_targets = 11  ;
 
     var number_of_blocks = 1;
 
-    var center_diameters = [40, 60];// 80]; // Diameter is % of Canvas Height, These are the Diameter from the center to the Targets
-    var target_diameters = [3, 6];//, 12];   // Diameter is % of Canvas Height, These are the Target diameters
+    var center_diameters = [40];//, 60];// 80]; // Diameter is % of Canvas Height, These are the Diameter from the center to the Targets
+    var target_diameters = [3];//, 6];//, 12];   // Diameter is % of Canvas Height, These are the Target diameters
 
     var number_of_trials_per_block = center_diameters.length * target_diameters.length;
 
@@ -31,7 +30,8 @@
     var half_invisible_half_visible = true;  // This overrides the invisibleMode value, if true half the blocks will be invisible
     var debugMode = false;                   // WARNING: In debug mode you will not have 120Hz Tracking, closer to ~50Hz tracking
     var finishMessage = "You have finished this block.\n\nPlease press OK to continue to view your results so far. ";
-    var welcomeMessage = "Welcome to the Pointing Study.\n\nBEFORE starting please make sure to press the FULLSCREEN button at the top of the page!";
+    var welcomeMessage = "Welcome to the Pointing Study.\n\n" +
+            "Click to really begin!";
     var breakMessage = "Feel free to take a break now.\nPress OK to continue.";
     // ---------Trial Variables--------------
 
@@ -382,6 +382,7 @@
     // Function to make the canvas fullscreen
     // Code is from a JS Fullscreen API
     function launchFullscreen(element) {
+        console.log("Why no fullscreen?")
         if(element.requestFullscreen) {
             element.requestFullscreen();
         }
@@ -456,6 +457,7 @@
     }
 
     </script>
+    <button onClick="launchFullscreen(document.documentElement)" style="top: 0; left: 0; position: absolute; width:100%;">Full Screen(Press Esc to Exit Full Screen)</button>
 </body>
 </html>
 

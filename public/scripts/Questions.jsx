@@ -15,16 +15,28 @@ var _questions = {
   first_feedback_questions: [
     "Do you feel like you performed well?",
     "How many times did you miss?",
+    "How much time did you spend on each target?"
   ],
   other_feedback_questions: [
-    "How many times did you miss?",
-    "What was your reaction time?",
-    "Has your reaction time improved?"
+    "How many times did you miss this round?",
+    "What was your time/target this round?",
+    "Has your time/target increased or decreased?",
+    "Do you feel like you performed better or worse than in the last round?",
+    "Do you feel like your accuracy has improved this round?"
   ]
 };
 
 var getRandomInt = function (min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+
+var getTwoRandomInt = function (min, max) {
+  var first = getRandomInt(min, max);
+  var second = first;
+  while(second === first) {
+    second = getRandomInt(min, max);
+  }
+  return [first, second];
 };
 
 var Questions = React.createClass({
@@ -39,12 +51,20 @@ var Questions = React.createClass({
     var buttonDisabled = this.state.wait > 0;
     var buttonText = buttonDisabled ? "Continue in " + this.state.wait + " seconds." : "Continue";
 
+    var questions = this.state.questions.map(function (text, i) {
+      var refName = "answer" + (i+1);
+      return (
+        <div><p>{text}</p>
+          <div className={areaClass}>
+            <textarea id={refName} ref={refName} className="form-control"/>
+          </div>
+        </div>
+      );
+    });
+
     return (
       <div>
-        <p>{this.state.question}</p>
-        <div className={areaClass}>
-          <textarea id="answer" ref="answer" className="form-control"/>
-        </div>
+        {questions}
         <input type="button" className="btn btn-block btn-default" value={buttonText} disabled={buttonDisabled} onClick={this.saveAnswer}/>
         {errorMessage}
       </div>
@@ -60,7 +80,7 @@ var Questions = React.createClass({
   getInitialState: function () {
     return {
       wait: 5,
-      question: '',
+      questions: [],
       answerError: '',
       worker: {},
       experiment: {}
@@ -84,17 +104,24 @@ var Questions = React.createClass({
       questions = _questions.other_feedback_questions;
     }
 
-    var index = getRandomInt(0, questions.length - 1);
-    var question = questions[index];
-    this.setState({question: question});
+    var qis= getTwoRandomInt(0, questions.length - 1);
+    var qs = [questions[qis[0]], questions[qis[1]]];
+    this.setState({questions: qs});
   },
   saveAnswer: function () {
-    var answer = document.getElementById('answer').value;
-    if (answer.length >= MIN_ANSWER_LENGTH) {
-      var output = {
-        question: this.state.question,
-        answer: document.getElementById('answer').value
-      };
+    var answer1 = document.getElementById('answer1').value;
+    var answer2 = document.getElementById('answer2').value;
+    if (answer1.length >= MIN_ANSWER_LENGTH && answer2.length >= MIN_ANSWER_LENGTH) {
+      var output = [
+        {
+          question: this.state.questions[0],
+          answer: answer1
+        },
+        {
+          question: this.state.questions[1],
+          answer: answer2
+        }
+      ];
       this.props.callback(output);
     }
     else {
