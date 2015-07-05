@@ -12,7 +12,9 @@ module.exports.experiment_name = function (req, res, next) {
 module.exports.task = function (req, res) {
   console.log(req.query);
   res.render('pointing', {
-    worker_id: req.query._id
+    worker_id: req.query._id,
+    target_diameters: req.query.target_diameters,
+    center_diameters: req.query.center_diameters
   });
 };
 

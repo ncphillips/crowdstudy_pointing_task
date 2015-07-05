@@ -21,7 +21,7 @@ var _questions = {
     "How many times did you miss this round?",
     "What was your time/target this round?",
     "Has your time/target increased or decreased?",
-    "Do you feel like you performed better or worse than in the last round?",
+    "Do you feel like you performed better or worse than in the round before this one?",
     "Do you feel like your accuracy has improved this round?"
   ]
 };

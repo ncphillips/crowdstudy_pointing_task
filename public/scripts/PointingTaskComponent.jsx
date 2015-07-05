@@ -4,6 +4,38 @@ if (typeof require !== 'undefined'){
   var CrowdExperiment = require('CrowdEperiment');
 }
 
+var BLOCKS = [
+  {
+    target_diameters: [10, 20],
+    center_diameters: [30, 60]
+  },
+  {
+    target_diameters: [5, 30],
+    center_diameters: [60, 30]
+  },
+  {
+    target_diameters: [20, 40],
+    center_diameters: [40, 80]
+  }
+];
+
+var NUM_BLOCKS = BLOCKS.length;
+
+function getBlockUrl(id, i) {
+  if (i < NUM_BLOCKS) {
+    var url = '/pointing_task/task?_id='+id+'&block=' + i;
+    var block = BLOCKS[i];
+    block.center_diameters.forEach(function (diameter, ci) {
+      url += '&center_diameters[' + ci +']=' + diameter;
+    });
+    block.target_diameters.forEach(function (diameter, ti) {
+      url += '&target_diameters[' + ti +']=' + diameter;
+    });
+    return url;
+  }
+  return '';
+}
+
 var PointingTaskStats = React.createClass({
   render: function () {
     var num_blocks_label = '# Blocks';
@@ -19,7 +51,7 @@ var PointingTaskStats = React.createClass({
               <thead>
                 <tr>
                   <td></td>
-                  <td>Total</td>
+                  <td>Total Time</td>
                   <td>Time / Target</td>
                   <td>{num_miss_label}</td>
                   <td>Misses / Target</td>
@@ -27,16 +59,16 @@ var PointingTaskStats = React.createClass({
               </thead>
               <tbody>
                 <tr>
-                  <td>Last Round</td>
-                  <td>{Math.round(this.state.stats.worker.last_block.time / 100)/10} s</td>
-                  <td>{Math.round(this.state.stats.worker.last_block.time_per_target)/1000 } s</td>
+                  <td>This Round</td>
+                  <td>{Math.round(this.state.stats.worker.last_block.time / 100)/10} sec.</td>
+                  <td>{Math.round(this.state.stats.worker.last_block.time_per_target)/1000 } sec.</td>
                   <td>{Math.round(this.state.stats.worker.last_block.num_misses)}</td>
                   <td>{Math.round(this.state.stats.worker.last_block.misses_per_target * 100)/100}</td>
                 </tr>
                 <tr>
                   <td>Avg. Round</td>
-                  <td>{Math.round(this.state.stats.worker.average.time / 100) / 10} s</td>
-                  <td>{Math.round(this.state.stats.worker.average.time_per_target)/1000 } s</td>
+                  <td>{Math.round(this.state.stats.worker.average.time / 100) / 10} sec.</td>
+                  <td>{Math.round(this.state.stats.worker.average.time_per_target)/1000 } sec.</td>
                   <td>{Math.round(this.state.stats.worker.average.num_misses * 100)/100}</td>
                   <td>{Math.round(this.state.stats.worker.average.misses_per_target * 100)/100}</td>
                 </tr>
@@ -74,7 +106,7 @@ var PointingTaskStats = React.createClass({
 var PointingTaskComponent = React.createClass({
   render: function () {
 
-    var url = "/pointing_task/task?_id=" + this.props.worker._id;
+    var url = getBlockUrl(this.props.worker._id, this.state.block);
     if (this.state.view === 'introduction') {
       return (
         <div>
@@ -98,6 +130,7 @@ var PointingTaskComponent = React.createClass({
     } else if (this.state.view === 'stats') {
       return (
         <div>
+          <FullScreenButton />
           <PointingTaskStats worker={this.props.worker} callback={this._onClickStats} is_first_feedback={this.state.block==0}/>
         </div>
       )
@@ -105,7 +138,7 @@ var PointingTaskComponent = React.createClass({
   },
   getDefaultProps: function () {
     return {
-      num_blocks: 3
+      num_blocks: NUM_BLOCKS
     }
   },
   getInitialState: function () {
@@ -165,6 +198,7 @@ var PointingTaskComponent = React.createClass({
       var href_array = href.split('/');
       var endpoint = href_array[href_array.length -1 ];
       if (endpoint === 'end'){
+        console.log("WHAT");
         _this.setState({view: 'stats'}, function () {
         });
       }
