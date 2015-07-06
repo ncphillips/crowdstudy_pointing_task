@@ -5,11 +5,10 @@ if (typeof require !== 'undefined'){
 }
 
 var BLOCKS = [
-  { center_diameters: [40, 60, 80], target_diameters: [3, 6, 10] },
-  { center_diameters: [40, 60, 80], target_diameters: [3, 6, 10] },
-  { center_diameters: [40, 60, 80], target_diameters: [3, 6, 10] },
-  { center_diameters: [40, 60, 80], target_diameters: [3, 6, 10] },
-  { center_diameters: [40, 60, 80], target_diameters: [3, 6, 10] }
+  { center_diameters: [40, 60], target_diameters: [3, 6] },
+  { center_diameters: [40, 60], target_diameters: [3, 6] },
+  { center_diameters: [40, 60], target_diameters: [3, 6] },
+  { center_diameters: [40, 60], target_diameters: [3, 6] }
 ];
 
 var NUM_BLOCKS = BLOCKS.length;
@@ -37,39 +36,36 @@ var PointingTaskStats = React.createClass({
     if (this.state.stats) {
       return (
         <div>
-          <div className="col-md-3"></div>
-          <div className="col-md-6">
-            <h1>Feedback</h1>
-            <table className="table">
-              <thead>
-                <tr>
-                  <td></td>
-                  <td>Total Time</td>
-                  <td>Time / Target</td>
-                  <td>{num_miss_label}</td>
-                  <td>Misses / Target</td>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>This Round</td>
-                  <td>{Math.round(this.state.stats.worker.last_block.time / 100)/10} sec.</td>
-                  <td>{Math.round(this.state.stats.worker.last_block.time_per_target)/1000 } sec.</td>
-                  <td>{Math.round(this.state.stats.worker.last_block.num_misses)}</td>
-                  <td>{Math.round(this.state.stats.worker.last_block.misses_per_target * 100)/100}</td>
-                </tr>
-                <tr>
-                  <td>Avg. Round</td>
-                  <td>{Math.round(this.state.stats.worker.average.time / 100) / 10} sec.</td>
-                  <td>{Math.round(this.state.stats.worker.average.time_per_target)/1000 } sec.</td>
-                  <td>{Math.round(this.state.stats.worker.average.num_misses * 100)/100}</td>
-                  <td>{Math.round(this.state.stats.worker.average.misses_per_target * 100)/100}</td>
-                </tr>
-              </tbody>
-            </table>
-            <Questions {...this.props}/>
-          </div>
-          <div className="col-md-3"></div>
+          <h1>Feedback</h1>
+          <table className="table">
+            <thead>
+              <tr>
+                <td></td>
+                <td>Total Time</td>
+                <td>Time / Target</td>
+                <td>{num_miss_label}</td>
+                <td>Misses / Target</td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>This Round</td>
+                <td>{Math.round(this.state.stats.worker.last_block.time / 100)/10} sec.</td>
+                <td>{Math.round(this.state.stats.worker.last_block.time_per_target)/1000 } sec.</td>
+                <td>{Math.round(this.state.stats.worker.last_block.num_misses)}</td>
+                <td>{Math.round(this.state.stats.worker.last_block.misses_per_target * 100)/100}</td>
+              </tr>
+              <tr>
+                <td>Overall Avg.</td>
+                <td>{Math.round(this.state.stats.worker.average.time / 100) / 10} sec.</td>
+                <td>{Math.round(this.state.stats.worker.average.time_per_target)/1000 } sec.</td>
+                <td>{Math.round(this.state.stats.worker.average.num_misses * 100)/100}</td>
+                <td>{Math.round(this.state.stats.worker.average.misses_per_target * 100)/100}</td>
+              </tr>
+            </tbody>
+          </table>
+          <Questions {...this.props}/>
+          <br/>
         </div>
       );
     }
@@ -121,10 +117,26 @@ var PointingTaskComponent = React.createClass({
         <iframe id="task-iframe" src={url} width={this.state.width} height={this.state.height}/>
       );
     } else if (this.state.view === 'stats') {
+      var percent_complete = ((this.state.block + 1) / this.props.num_blocks) * 100;
+      var style = {width: percent_complete + "%"};
+
       return (
         <div>
-          <FullScreenButton />
-          <PointingTaskStats worker={this.props.worker} callback={this._onClickStats} is_first_feedback={this.state.block==0}/>
+          <div className="col-md-3"></div>
+          <div className="col-md-6">
+            <br/>
+            <FullScreenButton />
+            <br/>
+            <div className="text-center">
+              <p>You have completed {this.state.block + 1 } out of {this.props.num_blocks} rounds!</p>
+            </div>
+            <div className="progress">
+              <div className="progress-bar" role="progressbar" style={style}>
+              </div>
+            </div>
+            <PointingTaskStats worker={this.props.worker} callback={this._onClickStats} is_first_feedback={this.state.block==0}/>
+          </div>
+          <div className="col-md-3"></div>
         </div>
       )
     }
@@ -139,8 +151,8 @@ var PointingTaskComponent = React.createClass({
       fullscreen: false,
       height: window.innerHeight,
       width: window.innerWidth,
-      block: 0,
-      view: 'introduction'
+      block: 2,
+      view: 'stats'
     }
   },
   resetDimensions: function () {
