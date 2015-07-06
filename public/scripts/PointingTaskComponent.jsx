@@ -95,13 +95,24 @@ var PointingTaskStats = React.createClass({
 var PointingTaskComponent = React.createClass({
   render: function () {
 
+    var style;
     var url = getBlockUrl(this.props.worker._id, this.state.block);
     if (this.state.view === 'introduction') {
+      style = {width: 0 + "%"};
       return (
         <div>
           <div className="col-md-3"></div>
           <div className="col-md-6">
+            <br/>
             <FullScreenButton />
+            <br/>
+            <div className="text-center">
+              <p>You have completed 0 out of {this.props.num_blocks} rounds!</p>
+            </div>
+            <div className="progress">
+              <div className="progress-bar" role="progressbar" style={style}>
+              </div>
+            </div>
             <h1>Pointing Task</h1>
             <p>Your goal is to click the green target with the cross in it as quickly and as accurately as possible.</p>
             <p>Please do your best to click each target as fast as possible, without making any errors.</p>
@@ -118,7 +129,7 @@ var PointingTaskComponent = React.createClass({
       );
     } else if (this.state.view === 'stats') {
       var percent_complete = ((this.state.block + 1) / this.props.num_blocks) * 100;
-      var style = {width: percent_complete + "%"};
+      style = {width: percent_complete + "%"};
 
       return (
         <div>

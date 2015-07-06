@@ -22,7 +22,6 @@ var _questions = {
     "On average, how many times do you miss each round?",
     "What was your time/target this round?",
     "On average, what is your time/target each round?",
-    "Has your time/target increased or decreased?",
     "Is your time/target for this round higher or lower than on your average round?",
     "Is your performance improving?",
     "Do you feel like your accuracy has improved this round?"
