@@ -5,18 +5,11 @@ if (typeof require !== 'undefined'){
 }
 
 var BLOCKS = [
-  {
-    target_diameters: [10, 20],
-    center_diameters: [30, 60]
-  },
-  {
-    target_diameters: [5, 30],
-    center_diameters: [60, 30]
-  },
-  {
-    target_diameters: [20, 40],
-    center_diameters: [40, 80]
-  }
+  { center_diameters: [40, 60, 80], target_diameters: [3, 6, 10] },
+  { center_diameters: [40, 60, 80], target_diameters: [3, 6, 10] },
+  { center_diameters: [40, 60, 80], target_diameters: [3, 6, 10] },
+  { center_diameters: [40, 60, 80], target_diameters: [3, 6, 10] },
+  { center_diameters: [40, 60, 80], target_diameters: [3, 6, 10] }
 ];
 
 var NUM_BLOCKS = BLOCKS.length;
