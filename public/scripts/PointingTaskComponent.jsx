@@ -151,7 +151,7 @@ var PointingTaskComponent = React.createClass({
       fullscreen: false,
       height: window.innerHeight,
       width: window.innerWidth,
-      block: 2,
+      block: 0,
       view: 'stats'
     }
   },
