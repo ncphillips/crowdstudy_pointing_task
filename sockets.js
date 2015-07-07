@@ -90,7 +90,7 @@ module.exports = function (config, server) {
       });
 
       socket.on('disconnect', function () {
-        var updateThing = function () {
+        var updateThing = function (db) {
           workers.update(
             {_id: worker_id},
             {$set: {"experiments.pointing_task.data": worker.experiments.pointing_task.data}},
@@ -106,12 +106,13 @@ module.exports = function (config, server) {
           updateThing();
         }
         catch (oh_no) {
+          db.close(function(){});
           MongoClient.connect(config.server.db, function (err, db) {
             if (err) {
               return console.log(err);
             }
             workers = db.collection('workers');
-            updateThing();
+            updateThing(db);
 
           });
         }
