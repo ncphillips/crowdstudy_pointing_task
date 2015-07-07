@@ -20,6 +20,7 @@ module.exports = function (config, server) {
 
   io.on('connection', function (socket) {
     console.log('a user connected');
+    var worker_id;
     var worker;
     var index;
 
@@ -27,7 +28,7 @@ module.exports = function (config, server) {
       var workers = db.collection('workers');
 
       socket.on('init', function (_id) {
-        console.log(_id);
+        worker_id = _id;
         workers.find({_id: ObjectId(_id)}).toArray(function (e, w) {
           if (e) {
             console.log(e);
@@ -89,16 +90,31 @@ module.exports = function (config, server) {
       });
 
       socket.on('disconnect', function () {
-        console.log('user disconnected');
-        workers.update(
-          {_id: worker._id},
-          {$set: {"experiments.pointing_task.data": worker.experiments.pointing_task.data}},
-          function () {
-            db.close(function () {
-              console.log('Pointing Task MongoDB Connection Closed');
-            });
-          }
-        );
+        var updateThing = function () {
+          workers.update(
+            {_id: worker_id},
+            {$set: {"experiments.pointing_task.data": worker.experiments.pointing_task.data}},
+            function () {
+              db.close(function () {
+                console.log('Pointing Task MongoDB Connection Closed');
+              });
+            }
+          );
+        };
+        try {
+          console.log('user disconnected');
+          updateThing();
+        }
+        catch (oh_no) {
+          MongoClient.connect(config.server.db, function (err, db) {
+            if (err) {
+              return console.log(err);
+            }
+            workers = db.collection('workers');
+            updateThing();
+
+          });
+        }
       });
     });
   });
