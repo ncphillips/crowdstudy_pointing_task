@@ -103,7 +103,7 @@ module.exports = function (config, server) {
         };
         try {
           console.log('user disconnected');
-          updateThing();
+          updateThing(db);
         }
         catch (oh_no) {
           db.close(function(){});
