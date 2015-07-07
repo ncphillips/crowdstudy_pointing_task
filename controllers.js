@@ -38,16 +38,17 @@ var statsForBlock = function (block) {
     misses_per_target: 0
   };
   var log;
-  for (var i=0; i < block.click_logs.length; i++) {
-    log = block.click_logs[i];
-    stats.time += parseInt(log.end_time) - parseInt(log.start_time);
-    stats.num_misses += parseInt(log.errors);
-  }
+  if (block.click_logs) {
+    for (var i=0; i < block.click_logs.length; i++) {
+      log = block.click_logs[i];
+      stats.time += parseInt(log.end_time) - parseInt(log.start_time);
+      stats.num_misses += parseInt(log.errors);
+    }
 
-  stats.num_targets = block.click_logs.length;
-  stats.time_per_target = stats.time / block.click_logs.length;
-  stats.misses_per_target = stats.num_misses / block.click_logs.length;
-  console.log(stats);
+    stats.num_targets = block.click_logs.length;
+    stats.time_per_target = stats.time / block.click_logs.length;
+    stats.misses_per_target = stats.num_misses / block.click_logs.length;
+  }
 
   return stats;
 };
