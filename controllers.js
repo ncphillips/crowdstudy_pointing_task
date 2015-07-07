@@ -38,7 +38,7 @@ var statsForBlock = function (block) {
     misses_per_target: 0
   };
   var log;
-  if (block.click_logs) {
+  if (block && block.click_logs) {
     for (var i=0; i < block.click_logs.length; i++) {
       log = block.click_logs[i];
       stats.time += parseInt(log.end_time) - parseInt(log.start_time);
