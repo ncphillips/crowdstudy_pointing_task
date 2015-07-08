@@ -77,7 +77,6 @@ module.exports.generate_stats = function (req, res, next) {
     num_blocks: data.length - 1
   };
 
-  console.log(req.worker.id, " blocks: ", data);
   for (var i=0; i < data.length - 1; i++) {
     console.log(req.worker.id, " ", i);
     sfb = statsForBlock(data[i]);

@@ -5,7 +5,7 @@ if (typeof require !== 'undefined'){
 }
 
 var BLOCKS = [
-  { center_diameters: [40, 60], target_diameters: [3, 6] },
+  { center_diameters: [40, ], target_diameters: [6,] },
   { center_diameters: [40, 60], target_diameters: [3, 6] },
   { center_diameters: [40, 60], target_diameters: [3, 6] },
   { center_diameters: [40, 60], target_diameters: [3, 6] }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Pointing Task</title>
-    <script src="/socket.io/socket.io.js"></script>
+
     <style>
         * { margin: 0px; padding: 0px; }
         canvas { display:block; background-color: #aaaaaa; }
@@ -11,37 +11,39 @@
 </head>
 
 <body>
-    <canvas id='main'></canvas>
-    <script>
-
-    var worker_id = "<%= worker_id %>";
-
-    // ---------Trial Variables--------------
-    var number_of_targets = 11  ;
-
-    var number_of_blocks = 1;
-
+<canvas id='main'></canvas>
+<script>
     var center_diameters = [<%= center_diameters %>];//, 60];// 80]; // Diameter is % of Canvas Height, These are the Diameter from the center to the Targets
     var target_diameters = [<%= target_diameters %>];//, 6];//, 12];   // Diameter is % of Canvas Height, These are the Target diameters
+    var worker_id = "<%= worker_id %>";
 
+    // ---------Experiment Variables--------------
+    var number_of_blocks = 1;
+    var number_of_targets = 11 ;
     var number_of_trials_per_block = center_diameters.length * target_diameters.length;
 
     var invisibleMode = true;                // true will display only the start and destination targets
     var half_invisible_half_visible = true;  // This overrides the invisibleMode value, if true half the blocks will be invisible
     var debugMode = false;                   // WARNING: In debug mode you will not have 120Hz Tracking, closer to ~50Hz tracking
-    var finishMessage =  "You have finished this round.\n\nPlease press OK to continue to view your results so far. ";
+    // ---------Experiment Variables--------------
+
+    // ---------Messages--------------------
     var welcomeMessage = "Welcome to the Pointing Study.\n\n" +
-                         "Your goal is to click the green target with the cross in it as quickly and as accurately as possible.\n\n" +
-                         "Please do your best to click each target as fast as possible, without making any errors.\n\n" +
-                         "Before starting, please press the full-screen button above.\n\n" +
-                         "Click to really begin!";
+            "Your goal is to click the green target with the cross in it as quickly and as accurately as possible.\n\n" +
+            "Please do your best to click each target as fast as possible, without making any errors.\n\n" +
+            "Before starting, please press the full-screen button above.\n\n" +
+            "Click to really begin!";
+
     var breakMessage = "Feel free to take a break now.\n\nPress OK to continue.";
-    // ---------Trial Variables--------------
+
+    var finishMessage =  "You have finished this round.\n\nPlease press OK to continue to view your results so far. ";
+    // ---------Messages--------------------
+
 
     // ---------Canvas Variables-------------
     var canvas = document.getElementById('main');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
     // ---------Canvas Variables-------------
 
     /* Target Class
@@ -50,6 +52,7 @@
      * id - Identification Number
      */
     function Target(x, y, r, id) {
+        'use strict';
         this.x = x;
         this.y = y;
         this.r = r;
@@ -58,10 +61,11 @@
     }
 
     Target.prototype.draw = function(){
-        if(start == this.id){           // Start target is purple
+        'use strict';
+        if(start === this.id){           // Start target is purple
             ctx.fillStyle = "purple";
         }
-        else if(dest == this.id){       // Destination target is green
+        else if(dest === this.id){       // Destination target is green
             ctx.fillStyle = "green";
         }
         else{
@@ -96,6 +100,7 @@
      * tar(px) - Diameter of the
      */
     function Trial(cen, tar){
+        'use strict';
         this.cen = cen;
         this.tar = tar;
     }
@@ -105,6 +110,8 @@
     window.addEventListener('resize', onResized, false);
 
     function onResized(){
+        'use strict';
+
         // Get new canvas dimensions
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
@@ -120,7 +127,7 @@
                 var temp = new Target(canvas.width/2 + Math.cos(i*angleIncr)*trial_cen, canvas.height/2 + Math.sin(i*angleIncr)*trial_cen, trial_tar, i);
                 Targets.push(temp);
             }
-        }   
+        }
         canvasDraw();
     }
     // ---------Window Events-------------
@@ -134,11 +141,11 @@
 
     // ---------Mouse Events-------------
     var stopLog = true;
-    document.addEventListener('mousemove', function(e){ 
+    document.addEventListener('mousemove', function(e){
         // Get mouse position, for all kinds of browsers
-        mouse.x = e.clientX || e.pageX || (e.clientX - canvas.offsetLeft); 
+        mouse.x = e.clientX || e.pageX || (e.clientX - canvas.offsetLeft);
         mouse.y = e.clientY || e.pageY || (e.clientY - canvas.offsetTop);
-        
+
         if(debugMode){
             // Draw a mouse trail
             ctx.fillStyle = "black";
@@ -149,62 +156,78 @@
         }
         if(!stopLog){
             // Log mouse movement
-            socket.emit(
-                    'moveLog',
-                    trial_tar + ";" +
-                    trial_cen + ";" +
-                    Trials[currentTrial].tar  + ";" +
-                    Trials[currentTrial].cen  + ";"  +
-                    number_of_targets + ";" +
-                    dest + ";" +
-                    mouse.x + ";" +
-                    mouse.y + ";" +
-                    Date.now() + ";"  +
-                    browserName + ";"  +
-                    OSName + ";" +
-                    (invisibleMode ? 0 : 1) + ";"  +
-                    (currentBlock + 1));
+            //socket.emit(
+            //  'moveLog',
+            //  trial_tar + ";" +
+            //  trial_cen + ";" +
+            //  Trials[currentTrial].tar  + ";" +
+            //  Trials[currentTrial].cen  + ";"  +
+            //  number_of_targets + ";" +
+            //  dest + ";" +
+            //  mouse.x + ";" +
+            //  mouse.y + ";" +
+            //  Date.now() + ";"  +
+            //  browserName + ";"  +
+            //  OSName + ";" +
+            //  (invisibleMode ? 0 : 1) + ";"  +
+            //  (currentBlock + 1));
         }
     }, false);
 
     var mousedown = false,
-        mousedownTime = 0;
+            mousedownTime = 0;
     document.addEventListener('mousedown', function(e){
         mousedown = true;
         mousedownTime = Date.now();
     }, false);
 
     var oldStart,
-        errors = 0,
-        doneStudy = false,
-        skipFirst = true,   // When the trial starts you don't want to log the first target click, you log the second time the target is clicked
-        currentBlock = 0;
+            errors = 0,
+            doneStudy = false,
+            skipFirst = true,   // When the trial starts you don't want to log the first target click, you log the second time the target is clicked
+            currentBlock = 0;
     document.addEventListener('mouseup', function(e){
         if(mousedown){  // Check if mouse was previously down, this indicates a click
             mousedown = false;
             for (var i = 0; i < Targets.length; i++) {
-                if(Targets[i].id == dest){
+                if(Targets[i].id === dest){
                     // Check if distance between mouse click and center of target is less than the target radius
                     if((Math.sqrt((Math.pow(((e.x || (e.clientX - canvas.offsetLeft)) - Targets[i].x),2))+(Math.pow(((e.y || (e.clientY - canvas.offsetTop)) - Targets[i].y),2)))) <= trial_tar){
                         stopLog = false; // Enable logging
                         endTime = Date.now();
                         if(!skipFirst){
                             // Log mouse click data
-                            socket.emit( 'clickLog',
-                            trial_tar + ";" +
-                            trial_cen + ";" +
-                            Trials[currentTrial].tar  + ";" +
-                            Trials[currentTrial].cen  + ";"  +
-                            number_of_targets + ";" +
-                            dest + ";" +
-                            startTime + ";" +
-                            endTime + ";" +
-                            mousedownTime  + ";"  +
-                            errors + ";"  +
-                            browserName  + ";" +
-                            OSName + ";" +
-                            (invisibleMode ? 0 : 1) + ";"  +
-                            (currentBlock + 1));
+                            click_logs.push({
+                                trial_tar: trial_tar,
+                                trial_cen: trial_cen,
+                                current_trial_tar: Trials[currentTrial].tar,
+                                current_trial_cen: Trials[currentTrial].cen,
+                                number_of_targets: number_of_targets,
+                                dest: dest,
+                                start_time: startTime,
+                                end_time: endTime,
+                                mousedown_time: mousedownTime,
+                                errors: errors,
+                                browser_name: browserName,
+                                os_name: OSName,
+                                invisible_mode: (invisibleMode ? 0 : 1),
+                                next_block:(currentBlock + 1)
+                            });
+                            //socket.emit( 'clickLog',
+                            //  trial_tar + ";" +
+                            //   + ";" +
+                            //    + ";" +
+                            //   + ";"  +
+                            //  + ";" +
+                            //  dest + ";" +
+                            //  startTime + ";" +
+                            //  endTime + ";" +
+                            //  mousedownTime  + ";"  +
+                            //  errors + ";"  +
+                            //  browserName  + ";" +
+                            //  OSName + ";" +
+                            //  (invisibleMode ? 0 : 1) + ";"  +
+                            //  (currentBlock + 1));
                         }
                         else{
                             skipFirst = false;
@@ -213,20 +236,21 @@
                         startTime = endTime;
                         oldStart = start;
                         start = dest;
-                        
-                        if(dest == 0){  // Indicates end of a trial
+
+                        if(dest === 0){  // Indicates end of a trial
                             skipFirst = true;
                             currentTrial++;
                             currentTrial %= number_of_trials_per_block;
-                            if(currentTrial == 0){  // Indicates end of a block
+                            if(currentTrial === 0){  // Indicates end of a block
                                 currentBlock++;
-                                if(currentBlock == number_of_blocks){
+                                if(currentBlock === number_of_blocks){
                                     // Happens when the entire trial is over
                                     doneStudy = true;
+                                    saveClickLogs();
                                     alert(finishMessage);
                                     window.location.replace("/pointing_task/end");
                                 }
-                                else if(currentBlock == number_of_blocks/2 && half_invisible_half_visible){
+                                else if(currentBlock === number_of_blocks/2 && half_invisible_half_visible){
                                     // If half done the blocks and doing half invisible half visible
                                     invisibleMode = !invisibleMode;
                                 }
@@ -236,7 +260,7 @@
                         }
                         else{
                             // Iterate through the trial
-                            dest = (oldStart == number_of_targets - 1) ? 0 : oldStart + 1;
+                            dest = (oldStart === number_of_targets - 1) ? 0 : oldStart + 1;
                             canvasDraw();
                         }
                         break;
@@ -250,7 +274,7 @@
     }, false);
     // ---------Mouse Events-------------
 
-    var socket = io();  // Socket connection to the server
+    //var socket = io();  // Socket connection to the server
     var angleIncr;      // Will hold angle between targets
     var start = 0;
     var dest = 0;
@@ -262,7 +286,14 @@
     var PID = 0;
     var browserName = "";
     var OSName = "Unknown OS";
+    var ctx;
+
+    var click_logs = [];
+
     function onWindowLoad() {
+        'use strict';
+                worker = parent.WorkerStore.get();
+                experiment = parent.ExperimentStore.get();
 
         detectBrowserOS();
 
@@ -278,7 +309,7 @@
         // PID = Date.now() % 1000;
 
         // Tell server PID number
-        socket.emit("init", worker_id);
+        //socket.emit("init", worker_id);
 
         // Hide the information passed in the URL
         window.history.replaceState("Hello", "World", "PointingTask");
@@ -289,7 +320,7 @@
 
         // Determines invisibility based on parity of PID
         if(half_invisible_half_visible){
-            if(PID%2 == 1){
+            if(PID % 2 === 1){
                 invisibleMode = true;
             }
             else{
@@ -298,7 +329,7 @@
         }
 
         // Initialize Trials
-        for (var i = 0; i < target_diameters.length; i++) {
+        for (i = 0; i < target_diameters.length; i++) {
             for (var j = 0; j < center_diameters.length; j++) {
                 Trials.push(new Trial(center_diameters[j], target_diameters[i]));
             }
@@ -306,14 +337,14 @@
 
         shuffleTrial();
 
-        angleIncr = 2*Math.PI/number_of_targets;                    // Angle between targets
-        trial_cen = canvas.height*(Trials[currentTrial].cen/200);   // Radius from screen center to target center for the trial
-        trial_tar = canvas.height*(Trials[currentTrial].tar/200);   // Radius of target in trial
-        dest = Math.ceil(number_of_targets/2);
+        angleIncr = 2 * Math.PI / number_of_targets;                    // Angle between targets
+        trial_cen = canvas.height * (Trials[currentTrial].cen / 200);   // Radius from screen center to target center for the trial
+        trial_tar = canvas.height * (Trials[currentTrial].tar / 200);   // Radius of target in trial
+        dest = Math.ceil(number_of_targets / 2);
 
         // Initialize Targets for trial
         for (var i = 0; i < number_of_targets; i++) {
-            var temp = new Target(canvas.width/2 + Math.cos(i*angleIncr)*trial_cen, canvas.height/2 + Math.sin(i*angleIncr)*trial_cen, trial_tar, i);
+            var temp = new Target(canvas.width / 2 + Math.cos(i*angleIncr) * trial_cen, canvas.height / 2 + Math.sin(i * angleIncr) * trial_cen, trial_tar, i);
             Targets.push(temp);
         }
 
@@ -322,11 +353,12 @@
 
     // Initializes the next trial
     function reloadTrial(){
-        angleIncr = 2*Math.PI/number_of_targets;
-        trial_cen = canvas.height*(Trials[currentTrial].cen/200);
-        trial_tar = canvas.height*(Trials[currentTrial].tar/200);
+        'use strict';
+        angleIncr = 2 * Math.PI / number_of_targets;
+        trial_cen = canvas.height * (Trials[currentTrial].cen / 200);
+        trial_tar = canvas.height * (Trials[currentTrial].tar / 200);
         start = 0;
-        dest = Math.ceil(number_of_targets/2);
+        dest = Math.ceil(number_of_targets / 2);
 
         Targets = [];   // Empty the old targets
 
@@ -347,6 +379,8 @@
 
     // Redraws the canvas
     function canvasDraw(){
+        'use strict';
+
         // Clear old canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         for (var i = 0; i < Targets.length; i++) {
@@ -370,6 +404,7 @@
 
     // Shuffles Trials within each block by repeatedly picking random 2 trial positions to swap
     function shuffleTrial(){
+        'use strict';
         var shuffle_one = Math.floor(Math.random() * Trials.length);
         var shuffle_two = Math.floor(Math.random() * Trials.length);
         var temp = null;
@@ -385,7 +420,7 @@
     // Function to make the canvas fullscreen
     // Code is from a JS Fullscreen API
     function launchFullscreen(element) {
-        console.log("Why no fullscreen?")
+        'use strict';
         if(element.requestFullscreen) {
             element.requestFullscreen();
         }
@@ -402,39 +437,40 @@
 
     // Function to detect browser information, and OS information
     function detectBrowserOS(){
+        'use strict';
         var nVer = navigator.appVersion;
         var nAgt = navigator.userAgent;
-        var fullVersion  = ''+parseFloat(navigator.appVersion);
+        var fullVersion  = '' + parseFloat(navigator.appVersion);
         var majorVersion = parseInt(navigator.appVersion,10);
         var nameOffset,verOffset,ix;
 
-        if ((verOffset=nAgt.indexOf("Opera"))!=-1) {
+        if ((verOffset=nAgt.indexOf("Opera")) !== -1) {
             browserName = "Opera";
-            fullVersion = nAgt.substring(verOffset+6);
-            if ((verOffset=nAgt.indexOf("Version"))!=-1){
+            fullVersion = nAgt.substring(verOffset + 6);
+            if ((verOffset=nAgt.indexOf("Version")) !== -1){
                 fullVersion = nAgt.substring(verOffset+8);
             }
         }
-        else if ((verOffset=nAgt.indexOf("MSIE"))!=-1) {
+        else if ((verOffset=nAgt.indexOf("MSIE")) !== -1) {
             browserName = "Microsoft Internet Explorer";
             fullVersion = nAgt.substring(verOffset+5);
         }
-        else if ((verOffset=nAgt.indexOf("Chrome"))!=-1) {
+        else if ((verOffset=nAgt.indexOf("Chrome")) !==-1) {
             browserName = "Chrome";
             fullVersion = nAgt.substring(verOffset+7);
         }
-        else if ((verOffset=nAgt.indexOf("Safari"))!=-1) {
+        else if ((verOffset=nAgt.indexOf("Safari")) !== -1) {
             browserName = "Safari";
             fullVersion = nAgt.substring(verOffset+7);
-            if ((verOffset=nAgt.indexOf("Version"))!=-1){
+            if ((verOffset=nAgt.indexOf("Version")) !== -1){
                 fullVersion = nAgt.substring(verOffset+8);
             }
         }
-        else if ((verOffset=nAgt.indexOf("Firefox"))!=-1) {
+        else if ((verOffset=nAgt.indexOf("Firefox"))!== -1) {
             browserName = "Firefox";
-            fullVersion = nAgt.substring(verOffset+8);
+            fullVersion = nAgt.substring(verOffset + 8);
         }
-        else if ( (nameOffset=nAgt.lastIndexOf(' ')+1) < (verOffset=nAgt.lastIndexOf('/')) ) {
+        else if ( (nameOffset=nAgt.lastIndexOf(' ') + 1) < (verOffset=nAgt.lastIndexOf('/')) ) {
             browserName = nAgt.substring(nameOffset,verOffset);
             fullVersion = nAgt.substring(verOffset+1);
             if (browserName.toLowerCase()==browserName.toUpperCase()) {
@@ -442,12 +478,13 @@
             }
         }
         if ((ix=fullVersion.indexOf(";"))!=-1){
-           fullVersion=fullVersion.substring(0,ix);
+            fullVersion=fullVersion.substring(0,ix);
         }
         if ((ix=fullVersion.indexOf(" "))!=-1){
-           fullVersion=fullVersion.substring(0,ix);
+            fullVersion=fullVersion.substring(0,ix);
         }
         majorVersion = parseInt(''+fullVersion,10);
+
         if (isNaN(majorVersion)) {
             fullVersion  = ''+parseFloat(navigator.appVersion);
             majorVersion = parseInt(navigator.appVersion,10);
@@ -459,8 +496,18 @@
         if (navigator.appVersion.indexOf("Linux")!=-1) OSName="Linux";
     }
 
-    </script>
-    <button onClick="launchFullscreen(document.documentElement)" style="top: 0; left: 0; position: absolute; width:100%;">Full Screen(Press Esc to Exit Full Screen)</button>
+    var worker;
+                var experiment;
+    function saveClickLogs() {
+                console.log("Saving");
+
+                console.log(experiment);
+                experiment.data.push({click_logs: click_logs, move_logs: []});
+                parent.ExperimentActions.update(worker._id, "pointing_task", experiment);
+    }
+
+</script>
+<button onClick="launchFullscreen(document.documentElement)" style="top: 0; left: 0; position: absolute; width:100%;">Full Screen(Press Esc to Exit Full Screen)</button>
 </body>
 </html>
 
