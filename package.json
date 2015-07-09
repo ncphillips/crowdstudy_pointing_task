@@ -1,6 +1,7 @@
 {
 "name": "crowdstudy_pointing_task",
 "version": "1.0.0",
+"main": "app.js",
 "repository": {
     "type": "git",
     "url": "http://github.com/ncphillips/crowdstudy_pointing_task"
