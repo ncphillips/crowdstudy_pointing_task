@@ -1,2 +1,0 @@
-PID; W; D; Wr; Dr; tot; Target; Start; End; MouseDown; Error; Browser; OS; Invisible; Block; WorkerID; Platform; HIT;
-0; 24.15; 161; 6; 40; 10; 1; 1428499699357; 1428499700053; 1428499699959; 0; Chrome; MacOS; 1; 1;12345;crowdflower; ; 
