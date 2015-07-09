@@ -282,6 +282,9 @@
         'use strict';
         worker = parent.WorkerStore.get();
         experiment = parent.ExperimentStore.get();
+        if (!experiment.data) {
+            experiment.data = [];
+        }
 
         detectBrowserOS();
 
