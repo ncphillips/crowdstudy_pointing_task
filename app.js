@@ -16,4 +16,5 @@ require('./routes.js')(app);
 
 exports.app = app;
 exports.sockets = require('./sockets');
+exports.controllers = require('./controllers');
 
