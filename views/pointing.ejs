@@ -206,7 +206,7 @@
                     if((Math.sqrt((Math.pow(((e.x || (e.clientX - canvas.offsetLeft)) - Targets[i].x),2))+(Math.pow(((e.y || (e.clientY - canvas.offsetTop)) - Targets[i].y),2)))) <= trial_tar){
                         stopLog = false; // Enable logging
                         endTime = Date.now();
-                        if(!skipFirst){
+                        if(!skipFirst) {
                             // Log mouse click data
                             click_logs.push({
                                 trial_tar: trial_tar,
@@ -222,8 +222,9 @@
                                 browser_name: browserName,
                                 os_name: OSName,
                                 invisible_mode: (invisibleMode ? 0 : 1),
-                                next_block:(currentBlock + 1)
+                                next_block: (currentBlock + 1)
                             });
+                        }
                         else{
                             skipFirst = false;
                         }
