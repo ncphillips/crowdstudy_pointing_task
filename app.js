@@ -1,4 +1,6 @@
+/* jslint node: true */
 'use strict';
+
 var express = require('express');
 var app = express();
 
@@ -14,7 +16,7 @@ app.use(express.static(__dirname + '/public'));
 // Load Experiment Routes
 require('./routes.js')(app);
 
-exports.app = app;
-exports.sockets = require('./sockets');
-exports.controllers = require('./controllers');
+module.exports.app = app;
+module.exports.controllers = require('./controllers');
+module.exports.routes = require('./routes');
 

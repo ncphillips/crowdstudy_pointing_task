@@ -1,4 +1,7 @@
+/* jslint node: true */
 'use strict';
+
+var config = require('./config');
 
 module.exports.index = function (req, res) {
   res.render('index');
@@ -27,6 +30,7 @@ module.exports.hook_worker_registration = function (req, res, next) {
    * @todo Select feedback type.
    */
   req.experiment.data = [];
+  req.feedback_type = 'None';
   next();
 };
 
@@ -95,38 +99,37 @@ module.exports.generate_stats = function (req, res, next) {
 
   req.stats.worker.average = average_block;
 
-  //switch (req.experiment.feedback_type) {
-  //  case config.NONE:
-  //    real_stats(req, res, next);
-  //    break;
-  //  case config.REAL:
-  //    real_stats(req, res, next);
-  //    break;
-  //  case config.FAKE:
-  //    fake_stats(req, res, next);
-  //    break;
-  //  default:
-  //    next();
-  //    break;
-  //}
+  switch (req.experiment.feedback_type) {
+    case config.NONE:
+      real_stats(req, res, next);
+      break;
+    case config.REAL:
+      real_stats(req, res, next);
+      break;
+    case config.FAKE:
+      fake_stats(req, res, next);
+      break;
+    default:
+      next();
+      break;
+  }
   next();
 };
 
 var real_stats = function (req, res, next) {
-
-
   next();
 };
 
-exports.real_stats = real_stats;
 
 var fake_stats = function (req, res, next) {
   req.stats = {};
   next();
 };
-exports.fake_stats = fake_stats;
 
 
-exports.returnStats = function (req, res) {
+module.exports.returnStats = function (req, res) {
   res.json(req.stats);
 };
+
+module.exports.real_stats = real_stats;
+module.exports.fake_stats = fake_stats;
