@@ -296,7 +296,7 @@
         invisibleMode = half_invisible_half_visible && (PID % 2 === 1);
 
         // Initialize Trials
-        for (i = 0; i < target_diameters.length; i++) {
+        for (var i = 0; i < target_diameters.length; i++) {
             for (var j = 0; j < center_diameters.length; j++) {
                 Trials.push(new Trial(center_diameters[j], target_diameters[i]));
             }
