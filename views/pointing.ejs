@@ -13,11 +13,25 @@
 <body>
 <canvas id='main'></canvas>
 <script>
-    var center_diameters = [<%= center_diameters %>];//, 60];// 80]; // Diameter is % of Canvas Height, These are the Diameter from the center to the Targets
-    var target_diameters = [<%= target_diameters %>];//, 6];//, 12];   // Diameter is % of Canvas Height, These are the Target diameters
+    // ---------Canvas Variables-------------
+    var canvas = document.getElementById('main');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    // ---------Canvas Variables-------------
+
+    // ---------Mouse Variables--------------
+    var mouse = {x: 0, y: 0};
+    var mousedown = false;
+    var mousedownTime = 0;
+    var stopLog = true;
+    // ---------Mouse Variables--------------
+
+
+    // ---------Config Variables--------------
+    var center_diameters = [<%= center_diameters %>]; // Diameter is % of Canvas Height, These are the Diameter from the center to the Targets
+    var target_diameters = [<%= target_diameters %>]; // Diameter is % of Canvas Height, These are the Target diameters
     var worker_id = "<%= worker_id %>";
 
-    // ---------Experiment Variables--------------
     var number_of_blocks = 1;
     var number_of_targets = 11 ;
     var number_of_trials_per_block = center_diameters.length * target_diameters.length;
@@ -25,9 +39,10 @@
     var invisibleMode = true;                // true will display only the start and destination targets
     var half_invisible_half_visible = true;  // This overrides the invisibleMode value, if true half the blocks will be invisible
     var debugMode = false;                   // WARNING: In debug mode you will not have 120Hz Tracking, closer to ~50Hz tracking
-    // ---------Experiment Variables--------------
+    // ---------Config Variables--------------
 
-    // ---------Messages--------------------
+
+    // ---------Message Variables--------------
     var welcomeMessage = "Welcome to the Pointing Study.\n\n" +
             "Your goal is to click the green target with the cross in it as quickly and as accurately as possible.\n\n" +
             "Please do your best to click each target as fast as possible, without making any errors.\n\n" +
@@ -37,15 +52,43 @@
     var breakMessage = "Feel free to take a break now.\n\nPress OK to continue.";
 
     var finishMessage =  "You have finished this round.\n\nPlease press OK to continue to view your results so far. ";
-    // ---------Messages--------------------
+    // ---------Message Variables--------------
 
 
-    // ---------Canvas Variables-------------
-    var canvas = document.getElementById('main');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    // ---------Canvas Variables-------------
+    // ---------Block Variables--------------
+    var Targets = [];
+    var Trials = [];
+    var oldStart;
+    var errors = 0;
+    var doneStudy = false;
+    var skipFirst = true;   // When the trial starts you don't want to log the first target click, you log the second time the target is clicked
+    var currentBlock = 0;
+    // ---------Block Variables--------------
 
+    // ---------Trial Variables--------------
+    var angleIncr;      // Will hold angle between targets
+    var start = 0;
+    var dest = 0;
+
+    var startTime = Date.now();
+    var endTime = 0;
+
+    var currentTrial = 0;
+
+    var trial_cen = 0;
+    var trial_tar = 0;
+    var PID = 0;
+    var browserName = "";
+    var OSName = "Unknown OS";
+    var ctx;
+
+    var worker;
+    var experiment = {data: []}; // This should get overritten, but just incase.
+
+    var click_logs = [];
+
+
+    // ---------Target Class-------------
     /* Target Class
      * (x,y) - Coordinates
      * r(px) - Radius
@@ -94,7 +137,9 @@
             ctx.fillText(this.id, this.x, this.y);
         }
     };
+    // ---------Target Class-------------
 
+    // ---------Trial Class-------------
     /* Trial Class
      * cen(px) - Diameter from center of screen to center of target
      * tar(px) - Diameter of the
@@ -104,11 +149,11 @@
         this.cen = cen;
         this.tar = tar;
     }
+    // ---------Trial Class-------------
 
-    // ---------Window Events-------------
-    window.addEventListener('load', onWindowLoad, false);
-    window.addEventListener('resize', onResized, false);
 
+
+    // ---------Event Handlers-------------
     function onResized(){
         'use strict';
 
@@ -130,18 +175,8 @@
         }
         canvasDraw();
     }
-    // ---------Window Events-------------
 
-    // Arrays to hold Targets and Trials
-    var Targets = [];
-    var Trials = [];
-
-    // Object to hold the mouse position
-    var mouse = {x: 0, y: 0};
-
-    // ---------Mouse Events-------------
-    var stopLog = true;
-    document.addEventListener('mousemove', function(e){
+    function onMouseMove(e){
         // Get mouse position, for all kinds of browsers
         mouse.x = e.clientX || e.pageX || (e.clientX - canvas.offsetLeft);
         mouse.y = e.clientY || e.pageY || (e.clientY - canvas.offsetTop);
@@ -154,39 +189,15 @@
             ctx.fill();
             ctx.stroke();
         }
-        if(!stopLog){
-            // Log mouse movement
-            //socket.emit(
-            //  'moveLog',
-            //  trial_tar + ";" +
-            //  trial_cen + ";" +
-            //  Trials[currentTrial].tar  + ";" +
-            //  Trials[currentTrial].cen  + ";"  +
-            //  number_of_targets + ";" +
-            //  dest + ";" +
-            //  mouse.x + ";" +
-            //  mouse.y + ";" +
-            //  Date.now() + ";"  +
-            //  browserName + ";"  +
-            //  OSName + ";" +
-            //  (invisibleMode ? 0 : 1) + ";"  +
-            //  (currentBlock + 1));
-        }
-    }, false);
+    }
 
-    var mousedown = false,
-            mousedownTime = 0;
-    document.addEventListener('mousedown', function(e){
+    function onMouseDown(e){
         mousedown = true;
         mousedownTime = Date.now();
-    }, false);
+    }
 
-    var oldStart,
-            errors = 0,
-            doneStudy = false,
-            skipFirst = true,   // When the trial starts you don't want to log the first target click, you log the second time the target is clicked
-            currentBlock = 0;
-    document.addEventListener('mouseup', function(e){
+
+     function onMouseUp(e){
         if(mousedown){  // Check if mouse was previously down, this indicates a click
             mousedown = false;
             for (var i = 0; i < Targets.length; i++) {
@@ -213,22 +224,6 @@
                                 invisible_mode: (invisibleMode ? 0 : 1),
                                 next_block:(currentBlock + 1)
                             });
-                            //socket.emit( 'clickLog',
-                            //  trial_tar + ";" +
-                            //   + ";" +
-                            //    + ";" +
-                            //   + ";"  +
-                            //  + ";" +
-                            //  dest + ";" +
-                            //  startTime + ";" +
-                            //  endTime + ";" +
-                            //  mousedownTime  + ";"  +
-                            //  errors + ";"  +
-                            //  browserName  + ";" +
-                            //  OSName + ";" +
-                            //  (invisibleMode ? 0 : 1) + ";"  +
-                            //  (currentBlock + 1));
-                        }
                         else{
                             skipFirst = false;
                         }
@@ -271,45 +266,23 @@
                 }
             }
         }
-    }, false);
-    // ---------Mouse Events-------------
+    }
+    // ---------Event Handlers-------------
 
-    //var socket = io();  // Socket connection to the server
-    var angleIncr;      // Will hold angle between targets
-    var start = 0;
-    var dest = 0;
-    var startTime = Date.now();
-    var endTime = 0;
-    var currentTrial = 0;
-    var trial_cen = 0;
-    var trial_tar = 0;
-    var PID = 0;
-    var browserName = "";
-    var OSName = "Unknown OS";
-    var ctx;
 
-    var click_logs = [];
+
+    function saveClickLogs() {
+        experiment.data.push({click_logs: click_logs, move_logs: []});
+        parent.ExperimentActions.update(worker._id, "pointing_task", experiment);
+    }
+
 
     function onWindowLoad() {
         'use strict';
-                worker = parent.WorkerStore.get();
-                experiment = parent.ExperimentStore.get();
+        worker = parent.WorkerStore.get();
+        experiment = parent.ExperimentStore.get();
 
         detectBrowserOS();
-
-        // Get PID number from external source
-        var query = window.location.search.substring(1);
-        var vars = query.split("&");
-        for (var i=0;i<vars.length;i++) {
-            var pair = vars[i].split("=");
-            if (pair[0] == "PID" || pair[0] == "pid" || pair[0] == "Pid" ) {
-                PID = pair[1];
-            }
-        }
-        // PID = Date.now() % 1000;
-
-        // Tell server PID number
-        //socket.emit("init", worker_id);
 
         // Hide the information passed in the URL
         window.history.replaceState("Hello", "World", "PointingTask");
@@ -319,14 +292,7 @@
         ctx = canvas.getContext('2d');
 
         // Determines invisibility based on parity of PID
-        if(half_invisible_half_visible){
-            if(PID % 2 === 1){
-                invisibleMode = true;
-            }
-            else{
-                invisibleMode = false;
-            }
-        }
+        invisibleMode = half_invisible_half_visible && (PID % 2 === 1);
 
         // Initialize Trials
         for (i = 0; i < target_diameters.length; i++) {
@@ -343,7 +309,7 @@
         dest = Math.ceil(number_of_targets / 2);
 
         // Initialize Targets for trial
-        for (var i = 0; i < number_of_targets; i++) {
+        for (i = 0; i < number_of_targets; i++) {
             var temp = new Target(canvas.width / 2 + Math.cos(i*angleIncr) * trial_cen, canvas.height / 2 + Math.sin(i * angleIncr) * trial_cen, trial_tar, i);
             Targets.push(temp);
         }
@@ -398,7 +364,7 @@
             // Write the debugging text
             ctx.fillStyle = 'black';
             ctx.font = "24px Georgia";
-            ctx.fillText("Canvas Height: " + canvas.height + " Canvas Width: " + canvas.width  +" Current Trial: " + currentTrial +" Current Block:" + currentBlock + " PID:" + PID, 0 , canvas.height*.1);
+            ctx.fillText("Canvas Height: " + canvas.height + " Canvas Width: " + canvas.width  +" Current Trial: " + currentTrial +" Current Block:" + currentBlock, 0 , canvas.height*.1);
         }
     }
 
@@ -496,15 +462,16 @@
         if (navigator.appVersion.indexOf("Linux")!=-1) OSName="Linux";
     }
 
-    var worker;
-                var experiment;
-    function saveClickLogs() {
-                console.log("Saving");
+    // ---------Window Events-------------
+    window.addEventListener('load', onWindowLoad, false);
+    window.addEventListener('resize', onResized, false);
+    // ---------Window Events-------------
 
-                console.log(experiment);
-                experiment.data.push({click_logs: click_logs, move_logs: []});
-                parent.ExperimentActions.update(worker._id, "pointing_task", experiment);
-    }
+    // ---------Mouse Events-------------
+    document.addEventListener('mousemove', onMouseMove, false);
+    document.addEventListener('mousedown', onMouseDown, false);
+    document.addEventListener('mouseup',   onMouseUp, false);
+
 
 </script>
 <button onClick="launchFullscreen(document.documentElement)" style="top: 0; left: 0; position: absolute; width:100%;">Full Screen(Press Esc to Exit Full Screen)</button>
