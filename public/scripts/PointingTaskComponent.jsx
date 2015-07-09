@@ -1,11 +1,9 @@
-'use strict';
-
 if (typeof require !== 'undefined'){
   var CrowdExperiment = require('CrowdEperiment');
 }
 
 var BLOCKS = [
-  { center_diameters: [40, ], target_diameters: [6,] },
+  { center_diameters: [40, 60], target_diameters: [3, 6] },
   { center_diameters: [40, 60], target_diameters: [3, 6] },
   { center_diameters: [40, 60], target_diameters: [3, 6] },
   { center_diameters: [40, 60], target_diameters: [3, 6] }
@@ -14,6 +12,7 @@ var BLOCKS = [
 var NUM_BLOCKS = BLOCKS.length;
 
 function getBlockUrl(id, i) {
+  'use strict';
   if (i < NUM_BLOCKS) {
     var url = '/pointing_task/task?_id='+id+'&block=' + i;
     var block = BLOCKS[i];
@@ -30,6 +29,7 @@ function getBlockUrl(id, i) {
 
 var PointingTaskStats = React.createClass({
   render: function () {
+    'use strict';
     var num_blocks_label = '# Blocks';
     var num_target_label = '# Targets';
     var num_miss_label = '# Misses';
@@ -82,9 +82,7 @@ var PointingTaskStats = React.createClass({
       url: '/pointing_task/' + this.props.worker._id + '/stats?block=' + this.props.block,
       dataType: 'json',
       success: this.setStats,
-      error: function (a, b, c) {
-        console.log(a, b, c);
-      }
+      error: function () { }
     });
   },
   setStats: function (stats) {
