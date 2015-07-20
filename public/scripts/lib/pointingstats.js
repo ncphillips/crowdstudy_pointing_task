@@ -111,6 +111,7 @@ var pointingstats = (function () {
       stats.num_targets = block.click_logs.length;
       stats.time_per_target = stats.time / block.click_logs.length;
       stats.misses_per_target = stats.num_misses / block.click_logs.length;
+      stats.rank = 100000/((stats.num_misses+1)* stats.time_per_target);
     }
 
     return stats;
@@ -137,9 +138,8 @@ var pointingstats = (function () {
     var worker_average_stats = workers.map(function (worker) {
       return generateAverageBlockStats(worker.experiments.pointing_task.data);
     });
-    var fastest_workers = statsandstones.sortStats(worker_average_stats, 'time', true);
-    var scoriest_workers = statsandstones.sortStats(worker_average_stats, 'num_misses', true);
-    var elite_worker_stats = fastest_workers.splice(0, n).concat(scoriest_workers.splice(0, n));
+    var elite_workers = statsandstones.sortStats(worker_average_stats, 'rank');
+    var elite_worker_stats = elite_workers.splice(0, n);
     return statsandstones.aggregateStats(elite_worker_stats);
   }
 

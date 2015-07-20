@@ -3,8 +3,8 @@
 //var React = require('react');
 var TOOLTIPS = {
   row: {
-    worker_last_block: "Your Last Round",
-    worker_average_block: "Your Avg. Round",
+    worker_last_block: "Last Round",
+    worker_average_block: "Avg. Round",
     population_average_block: "Avg. Worker's Round",
     population_elite_block: "Top Worker's Round"
   },

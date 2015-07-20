@@ -79,7 +79,7 @@ var real_stats = function (req, res, next) {
   var workers = req.db.collection('workers');
   workers.find({
     "experiments.pointing_task": {$exists: true},
-    "experiments.pointing_task.data": {$exists: true}
+    "experiments.pointing_task.data": {$exists: true, $not: {$size: 0}}
   }).toArray(function (err, population) {
     if (err) { return next(err); }
     req.stats.population.average = pointingstats.generatePopulationAverageStats(population);
