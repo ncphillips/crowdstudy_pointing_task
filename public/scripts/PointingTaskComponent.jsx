@@ -27,69 +27,6 @@ function getBlockUrl(id, i) {
   return '';
 }
 
-var PointingTaskStats = React.createClass({
-  render: function () {
-    'use strict';
-    var num_blocks_label = '# Blocks';
-    var num_target_label = '# Targets';
-    var num_miss_label = '# Misses';
-    if (this.state.stats) {
-      return (
-        <div>
-          <h1>Feedback</h1>
-          <table className="table">
-            <thead>
-              <tr>
-                <td></td>
-                <td>Total Time</td>
-                <td>Time / Target</td>
-                <td>{num_miss_label}</td>
-                <td>Misses / Target</td>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>This Round</td>
-                <td>{Math.round(this.state.stats.worker.last_block.time / 100)/10} sec.</td>
-                <td>{Math.round(this.state.stats.worker.last_block.time_per_target)/1000 } sec.</td>
-                <td>{Math.round(this.state.stats.worker.last_block.num_misses)}</td>
-                <td>{Math.round(this.state.stats.worker.last_block.misses_per_target * 100)/100}</td>
-              </tr>
-              <tr>
-                <td>Overall Avg.</td>
-                <td>{Math.round(this.state.stats.worker.average.time / 100) / 10} sec.</td>
-                <td>{Math.round(this.state.stats.worker.average.time_per_target)/1000 } sec.</td>
-                <td>{Math.round(this.state.stats.worker.average.num_misses * 100)/100}</td>
-                <td>{Math.round(this.state.stats.worker.average.misses_per_target * 100)/100}</td>
-              </tr>
-            </tbody>
-          </table>
-          <Questions {...this.props}/>
-          <br/>
-        </div>
-      );
-    }
-    else {
-      return <p>Loading feedback...</p>;
-    }
-  },
-  getInitialState: function () {
-    return {};
-  },
-  componentDidMount: function () {
-    $.ajax({
-      type: 'GET',
-      url: '/pointing_task/' + this.props.worker._id + '/stats?block=' + this.props.block,
-      dataType: 'json',
-      success: this.setStats,
-      error: function () { }
-    });
-  },
-  setStats: function (stats) {
-    this.setState({stats: stats})
-  }
-});
-
 var PointingTaskComponent = React.createClass({
   render: function () {
 
@@ -143,7 +80,7 @@ var PointingTaskComponent = React.createClass({
               <div className="progress-bar" role="progressbar" style={style}>
               </div>
             </div>
-            <PointingTaskStats worker={this.props.worker} callback={this._onClickStats} is_first_feedback={this.state.block==0}/>
+            <StatsView worker={this.props.worker} callback={this._onClickStats}/>
           </div>
           <div className="col-md-3"></div>
         </div>
@@ -161,7 +98,7 @@ var PointingTaskComponent = React.createClass({
       height: window.innerHeight,
       width: window.innerWidth,
       block: 0,
-      view: 'introduction'
+      view: 'stats'
     }
   },
   resetDimensions: function () {
