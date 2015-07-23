@@ -3,9 +3,9 @@
 //var React = require('react');
 var TOOLTIPS = {
   row: {
-    worker_last_block: "Last Round",
-    worker_average_block: "Avg. Round",
-    population_average_block: "Avg. Worker's Round",
+    worker_last_block: "Your Last Round",
+    worker_average_block: "Your Average Round",
+    population_average_block: "Average Worker's Round",
     population_elite_block: "Top Worker's Round"
   },
   col: {
@@ -41,10 +41,10 @@ var StatsRow = React.createClass({
     return (
       <tr>
         <td>{this.props.name}</td>
-        <td>{Math.round(this.props.data.time / 100) / 10} sec.</td>
-        <td>{Math.round(this.props.data.time_per_target)/1000 } sec.</td>
-        <td>{Math.round(this.props.data.num_misses * 100)/100}</td>
-        <td>{Math.round(this.props.data.misses_per_target * 100)/100}</td>
+        <td className="active">{Math.round(this.props.data.time / 100) / 10} sec.</td>
+        <td className="active">{Math.round(this.props.data.time_per_target)/1000 } sec.</td>
+        <td className="active">{Math.round(this.props.data.num_misses * 100)/100}</td>
+        <td className="active">{Math.round(this.props.data.misses_per_target * 100)/100}</td>
       </tr>
     );
   },
@@ -74,7 +74,8 @@ var StatsView = React.createClass({
     }
     return (
       <div>
-        <h2>Feedback</h2>
+        <h2 className="text-center">Pointing Task</h2>
+        <h3>Feedback</h3>
         <table className="table">
           <thead>
             <tr>
