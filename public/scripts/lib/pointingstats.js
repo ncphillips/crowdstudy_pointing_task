@@ -19,7 +19,7 @@ var statsandstones = (function () {
           if (!result.hasOwnProperty(name)){
             result[name] = 0;
           }
-          result[name] += parseInt(stat[name]) || 0;
+          result[name] += parseFloat(stat[name]) || 0;
         }
       }
     });

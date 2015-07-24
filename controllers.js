@@ -90,8 +90,25 @@ var real_stats = function (req, res, next) {
 
 
 var fake_stats = function (req, res, next) {
-  req.stats = {};
-  next();
+  real_stats(req, res, function () {
+    var a = req.stats.population_average;
+    var p = req.stats.population_elite;
+
+    var modifier = 0.5;
+
+    a.time = a.time * modifier;
+    a.time_per_target = a.time_per_target * modifier;
+    a.misses_per_target = a.misses_per_target * modifier;
+    a.num_misses = a.num_misses * modifier;
+
+    p.time = p.time * modifier;
+    p.time_per_target = p.time_per_target * modifier;
+    p.misses_per_target = p.misses_per_target * modifier;
+    p.num_misses = p.num_misses * modifier;
+
+    next();
+  });
+
 };
 
 
