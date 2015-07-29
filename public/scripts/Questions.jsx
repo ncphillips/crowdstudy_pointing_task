@@ -14,11 +14,11 @@ var props = {
 var _questions = {
   first_feedback_questions: [
     "Do you feel like you performed well?",
-    "How many times did you miss this round?",
-    "What was your time/target this round?",
+    "How many times did you miss last round?",
+    "What was your time/target last round?",
   ],
   other_feedback_questions: [
-    "How many times did you miss this round?",
+    "How many times did you miss last round?",
     "On average, how many times do you miss each round?",
     "What was your time/target this round?",
     "On average, what is your time/target each round?",
@@ -66,7 +66,7 @@ var Questions = React.createClass({
 
     return (
       <div>
-        <p>Please look at your feedback table above carefully, and answer the questions below to complete this round.</p>
+        <h4>Please look at your feedback table above carefully, and answer the questions below to complete this round.</h4>
         {questions}
         <input type="button" className="btn btn-block btn-default" value={buttonText} disabled={buttonDisabled} onClick={this.saveAnswer}/>
         {errorMessage}

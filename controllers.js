@@ -91,8 +91,8 @@ var real_stats = function (req, res, next) {
 
 var fake_stats = function (req, res, next) {
   real_stats(req, res, function () {
-    var a = req.stats.population_average;
-    var p = req.stats.population_elite;
+    var a = req.stats.population.average;
+    var p = req.stats.population.elite;
 
     var modifier = 0.5;
 

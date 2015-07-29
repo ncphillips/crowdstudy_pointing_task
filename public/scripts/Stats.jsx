@@ -6,7 +6,7 @@ var TOOLTIPS = {
     worker_last_block: "Your Last Round",
     worker_average_block: "Your Average Round",
     population_average_block: "Average Worker's Round",
-    population_elite_block: "Top Worker's Round"
+    population_elite_block: "Expert Worker's Round"
   },
   col: {
     time: "Time",
@@ -19,9 +19,9 @@ var TOOLTIPS = {
 var LABELS = {
   row: {
     worker_last_block: "Last Round",
-    worker_average_block: "Avg. Round",
-    population_average_block: "Avg. Worker's Round",
-    population_elite_block: "Top Worker's Round"
+    worker_average_block: "Average Round",
+    population_average_block: "Average Worker's Round",
+    population_elite_block: "Expert Worker's Round"
   },
   col: {
     time: "Time",
