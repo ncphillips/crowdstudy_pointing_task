@@ -99,7 +99,7 @@ var PointingTaskComponent = React.createClass({
       height: window.innerHeight,
       width: window.innerWidth,
       block: 0,
-      view: 'stats'
+      view: 'introduction'
     }
   },
   resetDimensions: function () {
