@@ -18,8 +18,8 @@ var TOOLTIPS = {
 
 var LABELS = {
   row: {
-    worker_last_block: "Last Round",
-    worker_average_block: "Average Round",
+    worker_last_block: "Your Last Round",
+    worker_average_block: "Your Average Round",
     population_average_block: "Average Worker's Round",
     population_elite_block: "Expert Worker's Round"
   },
@@ -75,7 +75,7 @@ var StatsView = React.createClass({
     return (
       <div>
         <h2 className="text-center">Pointing Task</h2>
-        <h3>Feedback</h3>
+        <h3>Feedback Table</h3>
         <table className="table">
           <thead>
             <tr>
@@ -92,9 +92,15 @@ var StatsView = React.createClass({
           <tfoot>
           </tfoot>
         </table>
-        <Questions callback={this.props.callback}/>
+        <Questions callback={this._handleQuestions}/>
       </div>
     )
+  },
+  _handleQuestions: function (q) {
+    this.props.callback({
+      questions: q,
+      stats: this.state.stats
+    });
   },
   componentDidMount: function () {
     $.ajax({
