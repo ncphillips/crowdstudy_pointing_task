@@ -61,7 +61,10 @@ var PointingTaskComponent = React.createClass({
     }
     else if (this.state.view === 'task') {
       return (
-        <iframe id="task-iframe" src={url} width={this.state.width} height={this.state.height}/>
+        <div>
+          <FullScreenButton fullscreen={this.state.fullscreen}/>
+          <iframe id="task-iframe" src={url} width={this.state.width} height={this.state.height}/>
+        </div>
       );
     } else if (this.state.view === 'stats') {
       var percent_complete = ((this.state.block + 1) / this.props.num_blocks) * 100;
@@ -133,7 +136,15 @@ var PointingTaskComponent = React.createClass({
       alert("Please enter full-screen mode before starting.");
     }
   },
-  _onClickStats: function () {
+  _onClickStats: function (sq) {
+    // @todo save questions
+    var worker = WorkerStore.get();
+    var experiment = ExperimentStore.get();
+    if (!experiment.stats_questions) {
+      experiment.stats_questions = [];
+    }
+    experiment.stats_questions.push(sq);
+    ExperimentActions.update(worker._id, 'pointing_task', experiment);
     var next_block = this.state.block + 1;
     if (next_block < this.props.num_blocks) {
       this.setState({block: next_block, view: 'task' });
