@@ -52,6 +52,7 @@ var PointingTaskComponent = React.createClass({
             <h1>Pointing Task</h1>
             <p>Your goal is to click the green target with the cross in it as quickly and as accurately as possible.</p>
             <p>Please do your best to click each target as fast as possible, without making any errors.</p>
+            <p>Periodically you will receive feedback and be asked some questions. Please answer these accurately and truthfully as you can. Your answers will be verified before your bonus is awarded.</p>
             <p>Before starting, please press the full-screen button above.</p>
             <input type="button" className="btn btn-primary btn-block" value="Begin" onClick={this._startTask}/>
           </div>

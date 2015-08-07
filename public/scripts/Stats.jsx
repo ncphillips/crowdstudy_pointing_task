@@ -75,8 +75,10 @@ var StatsView = React.createClass({
     return (
       <div>
         <h2 className="text-center">Pointing Task</h2>
-        <h3>Feedback Table</h3>
         <table className="table">
+          <caption>
+            <h3>Feedback Table</h3>
+          </caption>
           <thead>
             <tr>
               <td></td>

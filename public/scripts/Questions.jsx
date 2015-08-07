@@ -13,18 +13,16 @@ var props = {
 };
 var _questions = {
   first_feedback_questions: [
-    "Do you feel like you performed well?",
-    "How many times did you miss last round?",
-    "What was your time/target last round?",
+    "Last round, how many times did you miss?",
+    "Last round, what was your time/target?",
+    "Last round, do you feel like you performed well?"
   ],
   other_feedback_questions: [
-    "How many times did you miss last round?",
-    "On average, how many times do you miss each round?",
-    "What was your time/target this round?",
-    "On average, what is your time/target each round?",
-    "Is your time/target for this round higher or lower than on your average round?",
-    "Is your performance improving?",
-    "Do you feel like your accuracy has improved this round?"
+    "Last round, were you faster than the Average worker?",
+    "Last round, were you faster than the Expert worker?", 
+    "Last round, did you miss fewer times than the Average worker?",
+    "Last round, did you miss fewer times than the Expert worker?",
+    "Last round, do you feel like you performed well?"
   ]
 };
 
@@ -67,6 +65,7 @@ var Questions = React.createClass({
     return (
       <div>
         <h4>Please look at your feedback table above carefully, and answer the questions below to complete this round.</h4>
+        <h5>Remeber we will be evaluating the accuracy of your answers before rewarding your bonus, so please answer accurately and honestly.</h5>
         {questions}
         <input type="button" className="btn btn-block btn-default" value={buttonText} disabled={buttonDisabled} onClick={this.saveAnswer}/>
         {errorMessage}
