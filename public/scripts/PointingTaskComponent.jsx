@@ -63,7 +63,7 @@ var PointingTaskComponent = React.createClass({
     else if (this.state.view === 'task') {
       return (
         <div>
-          <FullScreenButton fullscreen={this.state.fullscreen}/>
+          <FullScreenButton fullscreen={this.state.fullscreen} callback={this.toggleFullScreen}></FullScreenButton>
           <iframe id="task-iframe" src={url} width={this.state.width} height={this.state.height}/>
         </div>
       );
