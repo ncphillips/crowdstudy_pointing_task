@@ -3,11 +3,11 @@ if (typeof require !== 'undefined'){
 }
 
 var BLOCKS = [
-  { center_diameters: [40, 60], target_diameters: [3, 6] },
-  { center_diameters: [40, 60], target_diameters: [3, 6] },
-  { center_diameters: [40, 60], target_diameters: [3, 6] },
-  { center_diameters: [40, 60], target_diameters: [3, 6] },
-  { center_diameters: [40, 60], target_diameters: [3, 6] }
+  { center_diameters: [40, ], target_diameters: [3, ] },
+  { center_diameters: [40, ], target_diameters: [3, ] },
+  { center_diameters: [40, ], target_diameters: [3, ] },
+  { center_diameters: [40, ], target_diameters: [3, ] },
+  { center_diameters: [40, ], target_diameters: [3, ] }
 ];
 
 var NUM_BLOCKS = BLOCKS.length;
@@ -30,7 +30,6 @@ function getBlockUrl(id, i) {
 
 var PointingTaskComponent = React.createClass({
   render: function () {
-
     var style;
     var url = getBlockUrl(this.props.worker._id, this.state.block);
     if (this.state.view === 'introduction') {
@@ -85,7 +84,7 @@ var PointingTaskComponent = React.createClass({
               <div className="progress-bar" role="progressbar" style={style}>
               </div>
             </div>
-            <StatsView worker={this.props.worker} callback={this._onClickStats}/>
+            <StatsView block={this.state.block} worker={this.props.worker} callback={this._onClickStats}/>
           </div>
           <div className="col-md-3"></div>
         </div>
