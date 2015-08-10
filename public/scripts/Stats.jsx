@@ -63,9 +63,9 @@ var StatsView = React.createClass({
     if (this.state.stats.worker.last_block) {
       rows.push(<StatsRow name={LABELS.row.worker_last_block} data={this.state.stats.worker.last_block}/>);
     }
-    if (this.state.stats.worker.average) {
-      rows.push(<StatsRow name={LABELS.row.worker_average_block} data={this.state.stats.worker.average}/>);
-    }
+    //if (this.state.stats.worker.average) {
+    //  rows.push(<StatsRow name={LABELS.row.worker_average_block} data={this.state.stats.worker.average}/>);
+    //}
     if (this.state.stats.population.average) {
       rows.push(<StatsRow name={LABELS.row.population_average_block} data={this.state.stats.population.average}/>);
     }
