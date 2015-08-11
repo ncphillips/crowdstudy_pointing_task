@@ -143,7 +143,7 @@ var PointingTaskComponent = React.createClass({
     if (!experiment.stats_questions) {
       experiment.stats_questions = [];
     }
-    experiment.stats_questions.push(sq);
+    experiment.stats_questions[this.state.block] = sq;
     ExperimentActions.update(worker._id, 'pointing_task', experiment);
     var next_block = this.state.block + 1;
     if (next_block < this.props.num_blocks) {

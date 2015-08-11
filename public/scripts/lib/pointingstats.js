@@ -132,26 +132,23 @@ var pointingstats = (function () {
     return statsandstones.aggregateStats(block_stats);
   }
 
-  function generatePopulationEliteStats(workers) {
+  function generatePopulationEliteStats(workers, block_num) {
     // Get the aggregated stats object for  a worker.
     var n = Math.ceil(workers.length * 0.15) || 1;
     var worker_average_stats = workers.map(function (worker) {
-      return generateAverageBlockStats(worker.experiments.pointing_task.data);
+      return generateBlockStats(worker.experiments.pointing_task.data[block_num]);
     });
     var elite_workers = statsandstones.sortStats(worker_average_stats, 'rank');
     var elite_worker_stats = elite_workers.splice(0, n);
     return statsandstones.aggregateStats(elite_worker_stats);
   }
 
-  function generatePopulationAverageStats(workers) {
-    var worker_average_stats = workers.map(function (worker) {
-      if (worker.experiments &&
-        worker.experiments.pointing_task &&
-        worker.experiments.pointing_task.data
-      ){
-
-        return generateAverageBlockStats(worker.experiments.pointing_task.data);
-      }
+  function generatePopulationAverageStats(workers, block_num) {
+    console.log("GENERATING POPULATION AVERAGE STATS");
+    var worker_average_stats = workers.map(function (worker, i) {
+      var a = generateBlockStats(worker.experiments.pointing_task.data[block_num]);
+      console.log("\t WORKER ", i, ': ', a);
+      return a;
     });
 
     return statsandstones.aggregateStats(worker_average_stats);
