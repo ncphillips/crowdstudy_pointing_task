@@ -60,17 +60,20 @@ var StatsRow = React.createClass({
 var StatsView = React.createClass({
   render: function () {
     var rows = [];
+    var no_comparison_feedback = this.props.block < 2;
     if (this.state.stats.worker.last_block) {
       rows.push(<StatsRow name={LABELS.row.worker_last_block} data={this.state.stats.worker.last_block}/>);
     }
     //if (this.state.stats.worker.average) {
     //  rows.push(<StatsRow name={LABELS.row.worker_average_block} data={this.state.stats.worker.average}/>);
     //}
-    if (this.state.stats.population.average) {
-      rows.push(<StatsRow name={LABELS.row.population_average_block} data={this.state.stats.population.average}/>);
-    }
-    if (this.state.stats.population.elite) {
-      rows.push(<StatsRow name={LABELS.row.population_elite_block} data={this.state.stats.population.elite}/>);
+    if (!no_comparison_feedback) {
+      if (this.state.stats.population.average) {
+        rows.push(<StatsRow name={LABELS.row.population_average_block} data={this.state.stats.population.average}/>);
+      }
+      if (this.state.stats.population.elite) {
+        rows.push(<StatsRow name={LABELS.row.population_elite_block} data={this.state.stats.population.elite}/>);
+      }
     }
     return (
       <div>
@@ -94,7 +97,7 @@ var StatsView = React.createClass({
           <tfoot>
           </tfoot>
         </table>
-        <Questions callback={this._handleQuestions} is_first_feedback={this.props.block === 0 || this.props.block === 1}/>
+        <Questions callback={this._handleQuestions} is_first_feedback={no_comparison_feedback}/>
       </div>
     )
   },

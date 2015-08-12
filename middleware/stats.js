@@ -31,8 +31,8 @@ module.exports = {
    * @param next
    */
   fake_better: function (req, res, next) {
-    var elite_mod = 1.2;  // 20% better than top workers
-    var avg_mod = 1.4;    // 40% better than average workers
+    var elite_mod = 1.1;  // 20% better than top workers
+    var avg_mod = 1.25;    // 40% better than average workers
     var last_block = req.stats.worker.last_block;
 
     // Average
@@ -62,8 +62,8 @@ module.exports = {
    * @param next
    */
   fake_worse: function (req, res, next) {
-    var elite_mod = 0.6;  // 40% worse than top workers
-    var avg_mod = 0.8;    // 20% worse than average workers
+    var elite_mod = 0.75;  // 40% worse than top workers
+    var avg_mod = 0.90;    // 20% worse than average workers
     var last_block = req.stats.worker.last_block;
 
     // Average

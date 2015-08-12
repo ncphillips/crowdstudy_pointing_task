@@ -137,7 +137,6 @@ var PointingTaskComponent = React.createClass({
     }
   },
   _onClickStats: function (sq) {
-    // @todo save questions
     var worker = WorkerStore.get();
     var experiment = ExperimentStore.get();
     if (!experiment.stats_questions) {
