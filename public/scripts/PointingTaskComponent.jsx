@@ -39,7 +39,7 @@ var PointingTaskComponent = React.createClass({
           <div className="col-md-3"></div>
           <div className="col-md-6">
             <br/>
-            <FullScreenButton />
+            <FullScreenButton fullscreen={this.state.fullscreen} />
             <br/>
             <div className="text-center">
               <p>You have completed 0 out of {this.props.num_blocks} rounds!</p>
@@ -75,7 +75,7 @@ var PointingTaskComponent = React.createClass({
           <div className="col-md-3"></div>
           <div className="col-md-6">
             <br/>
-            <FullScreenButton />
+            <FullScreenButton fullscreen={this.state.fullscreen}/>
             <br/>
             <div className="text-center">
               <p>You have completed {this.state.block + 1 } out of {this.props.num_blocks} rounds!</p>
@@ -125,6 +125,7 @@ var PointingTaskComponent = React.createClass({
     this.watchIframe();
   },
   toggleFullScreen: function (f) {
+    console.log("Fullscreen: ", f);
     this.setState({fullscreen: f});
   },
   _startTask: function () {
@@ -160,7 +161,6 @@ var PointingTaskComponent = React.createClass({
       var href_array = href.split('/');
       var endpoint = href_array[href_array.length -1 ];
       if (endpoint === 'end'){
-        console.log("WHAT");
         _this.setState({view: 'stats'}, function () {
         });
       }
