@@ -7,7 +7,7 @@ var constants = {
 };
 
 var config = {
-  feedback_type: constants.REAL,
+  feedback_type: constants.NONE,
   stats_query: {
     "experiments.pointing_task.feedback_type": constants.NONE,
     "experiments.pointing_task": { $exists: true },
