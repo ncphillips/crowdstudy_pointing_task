@@ -23,6 +23,8 @@ function getBlockUrl(id, i) {
     block.target_diameters.forEach(function (diameter, ti) {
       url += '&target_diameters[' + ti +']=' + diameter;
     });
+
+    url += '&current_block_num=' + i;
     return url;
   }
   return '';

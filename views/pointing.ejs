@@ -30,6 +30,7 @@
     // ---------Config Variables--------------
     var center_diameters = [<%= center_diameters %>]; // Diameter is % of Canvas Height, These are the Diameter from the center to the Targets
     var target_diameters = [<%= target_diameters %>]; // Diameter is % of Canvas Height, These are the Target diameters
+    var current_block_num = <%= current_block_num %>
     var worker_id = "<%= worker_id %>";
 
     var number_of_blocks = 1;
@@ -273,7 +274,8 @@
 
 
     function saveClickLogs() {
-        experiment.data.push({click_logs: click_logs, move_logs: []});
+        experiment.data = experiment.data || [];
+        experiment.data[current_block_num] = {click_logs: click_logs, move_logs: []};
         parent.ExperimentActions.update(worker._id, "pointing_task", experiment);
     }
 

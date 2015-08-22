@@ -35,7 +35,8 @@ module.exports.task = function (req, res) {
   res.render('pointing', {
     worker_id: req.query._id,
     target_diameters: req.query.target_diameters,
-    center_diameters: req.query.center_diameters
+    center_diameters: req.query.center_diameters,
+    current_block_num: req.query.current_block_num
   });
 };
 
